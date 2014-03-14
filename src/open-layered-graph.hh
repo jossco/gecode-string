@@ -41,7 +41,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     * \ingroup FuncIntProp
     */
    template<class View, class Val, class Degree, class StateIdx>
-   class LayeredGraph : public Propagator {
+   class OpenLayeredGraph : public Propagator {
    protected:
      /// States are described by number of incoming and outgoing edges
      class State {
@@ -164,12 +164,12 @@ namespace Gecode { namespace Int { namespace Extensional {
      ExecStatus initialize(Space& home, 
                            const VarArgArray<Var>& x, const DFA& dfa);
      /// Constructor for cloning \a p
-     LayeredGraph(Space& home, bool share,
-                  LayeredGraph<View,Val,Degree,StateIdx>& p);
+     OpenLayeredGraph(Space& home, bool share,
+                  OpenLayeredGraph<View,Val,Degree,StateIdx>& p);
    public:
      /// Constructor for posting
      template<class Var>
-     LayeredGraph(Home home, 
+     OpenLayeredGraph(Home home, 
                   const VarArgArray<Var>& x, const DFA& dfa);
      /// Copy propagator during cloning
      virtual Actor* copy(Space& home, bool share);
@@ -189,10 +189,10 @@ namespace Gecode { namespace Int { namespace Extensional {
 
    /// Select small types for the layered graph propagator
    template<class Var>
-   ExecStatus post_lgp(Home home, 
+   ExecStatus post_olgp(Home home, 
                        const VarArgArray<Var>& x, const DFA& dfa);
 
- }}}
-}
+}}}
+
 
 #endif

@@ -1,6 +1,7 @@
-#include <open-layered_graph.hh>
+#include <open-layered-graph.hh>
 #include <climits>
 #include <algorithm>
+
 
 /*	from
 *	gecode/int/extensional.cpp
@@ -8,17 +9,17 @@
 namespace Gecode {
 
 	void
-	extensional(Home home, const IntVarArgs& x, DFA dfa,IntConLevel) {
+	extensional(Home home, const IntVarArgs& x, DFA dfa, const IntVar n) {
 		using namespace Int;
 		if (x.same(home))
 			throw ArgumentSame("Int::extensional");
 		if (home.failed()) return;
-		GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+		GECODE_ES_FAIL(Extensional::post_olgp(home,x,dfa));
 	}
 }
 
 namespace Gecode { namespace Int { namespace Extensional {
-
+  
   /**
    * \brief Traits class for variables
    *
@@ -26,27 +27,27 @@ namespace Gecode { namespace Int { namespace Extensional {
    * typedef \endcode for the view \a View corresponding to this variable.
    */
   template<class Var>
-  class VarTraits {};
-
+  class OVarTraits {};
+  
   /**
    * \brief Traits class for variables
    *
    * This class specializes the VarTraits for integer variables.
    */
   template<>
-  class VarTraits<IntVar> {
+  class OVarTraits<IntVar> {
   public:
     /// The variable type of an IntView
     typedef Int::IntView View;
   };
-
+  
   /**
    * \brief Traits class for variables
    *
-   * This class specializes the VarTraits for Boolean variables.
+   * This class specializes the OVarTraits for Boolean variables.
    */
   template<>
-  class VarTraits<BoolVar> {
+  class OVarTraits<BoolVar> {
   public:
     /// The variable type of an IntView
     typedef Int::BoolView View;
@@ -58,43 +59,43 @@ namespace Gecode { namespace Int { namespace Extensional {
    */
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::State::init(void) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::State::init(void) {
     i_deg=o_deg=0; 
   }
 
   
   template<class View, class Val, class Degree, class StateIdx>
-  forceinline typename LayeredGraph<View,Val,Degree,StateIdx>::State& 
-  LayeredGraph<View,Val,Degree,StateIdx>::i_state(int i, StateIdx is) {
+  forceinline typename OpenLayeredGraph<View,Val,Degree,StateIdx>::State& 
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::i_state(int i, StateIdx is) {
     return layers[i].states[is];
   }
   template<class View, class Val, class Degree, class StateIdx>
-  forceinline typename LayeredGraph<View,Val,Degree,StateIdx>::State& 
-  LayeredGraph<View,Val,Degree,StateIdx>::i_state
-  (int i, const typename LayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
+  forceinline typename OpenLayeredGraph<View,Val,Degree,StateIdx>::State& 
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::i_state
+  (int i, const typename OpenLayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
     return i_state(i,e.i_state);
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline bool 
-  LayeredGraph<View,Val,Degree,StateIdx>::i_dec
-  (int i, const typename LayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::i_dec
+  (int i, const typename OpenLayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
     return --i_state(i,e).o_deg == 0;
   }
   template<class View, class Val, class Degree, class StateIdx>
-  forceinline typename LayeredGraph<View,Val,Degree,StateIdx>::State& 
-  LayeredGraph<View,Val,Degree,StateIdx>::o_state(int i, StateIdx os) {
+  forceinline typename OpenLayeredGraph<View,Val,Degree,StateIdx>::State& 
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::o_state(int i, StateIdx os) {
     return layers[i+1].states[os];
   }
   template<class View, class Val, class Degree, class StateIdx>
-  forceinline typename LayeredGraph<View,Val,Degree,StateIdx>::State& 
-  LayeredGraph<View,Val,Degree,StateIdx>::o_state
-  (int i, const typename LayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
+  forceinline typename OpenLayeredGraph<View,Val,Degree,StateIdx>::State& 
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::o_state
+  (int i, const typename OpenLayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
     return o_state(i,e.o_state);
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline bool 
-  LayeredGraph<View,Val,Degree,StateIdx>::o_dec
-  (int i, const typename LayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::o_dec
+  (int i, const typename OpenLayeredGraph<View,Val,Degree,StateIdx>::Edge& e) {
     return --o_state(i,e).i_deg == 0;
   }
 
@@ -104,31 +105,31 @@ namespace Gecode { namespace Int { namespace Extensional {
    */
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues::LayerValues(void) {}
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues::LayerValues(void) {}
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues
   ::LayerValues(const Layer& l)
     : s1(l.support), s2(l.support+l.size) {}
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues::init(const Layer& l) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues::init(const Layer& l) {
     s1=l.support; s2=l.support+l.size;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline bool
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues
   ::operator ()(void) const {
     return s1<s2;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues::operator ++(void) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues::operator ++(void) {
     s1++;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline int
-  LayeredGraph<View,Val,Degree,StateIdx>::LayerValues::val(void) const {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::LayerValues::val(void) const {
     return s1->val;
   }
 
@@ -139,14 +140,14 @@ namespace Gecode { namespace Int { namespace Extensional {
    */
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::Index::Index(Space& home, Propagator& p,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::Index::Index(Space& home, Propagator& p,
                                                        Council<Index>& c,
                                                        int i0)
     : Advisor(home,p,c), i(i0) {}
 
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::Index::Index(Space& home, bool share,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::Index::Index(Space& home, bool share,
                                                        Index& a)
     : Advisor(home,share,a), i(a.i) {}
 
@@ -157,32 +158,32 @@ namespace Gecode { namespace Int { namespace Extensional {
    */
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::IndexRange(void)
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::IndexRange(void)
     : _fst(INT_MAX), _lst(INT_MIN) {}
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::reset(void) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::reset(void) {
     _fst=INT_MAX; _lst=INT_MIN;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::add(int i) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::add(int i) {
     _fst=std::min(_fst,i); _lst=std::max(_lst,i);
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::add
-  (const typename LayeredGraph<View,Val,Degree,StateIdx>::IndexRange& ir) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::add
+  (const typename OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange& ir) {
     _fst=std::min(_fst,ir._fst); _lst=std::max(_lst,ir._lst);
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline bool
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::empty(void) const {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::empty(void) const {
     return _fst>_lst;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::lshift(int n) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::lshift(int n) {
     if (empty())
       return;
     if (n > _lst) {
@@ -194,12 +195,12 @@ namespace Gecode { namespace Int { namespace Extensional {
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline int
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::fst(void) const {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::fst(void) const {
     return _fst;
   }
   template<class View, class Val, class Degree, class StateIdx>
   forceinline int
-  LayeredGraph<View,Val,Degree,StateIdx>::IndexRange::lst(void) const {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::IndexRange::lst(void) const {
     return _lst;
   }
 
@@ -213,7 +214,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   template<class Var>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>::LayeredGraph(Home home,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::OpenLayeredGraph(Home home,
                                                        const VarArgArray<Var>& x, 
                                                        const DFA& dfa)
     : Propagator(home), c(home), n(x.size()), 
@@ -223,7 +224,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   forceinline void
-  LayeredGraph<View,Val,Degree,StateIdx>::audit(void) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::audit(void) {
 #ifdef GECODE_AUDIT
     // Check states and edge information to be consistent
     unsigned int n_e = 0; // Number of edges
@@ -246,7 +247,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   template<class Var>
   forceinline ExecStatus
-  LayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
                                                      const VarArgArray<Var>& x, 
                                                      const DFA& dfa) {
 
@@ -418,7 +419,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   ExecStatus
-  LayeredGraph<View,Val,Degree,StateIdx>::advise(Space& home,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::advise(Space& home,
                                                  Advisor& _a, const Delta& d) {
     // Check whether state information has already been created
     if (layers[0].states == NULL) {
@@ -564,7 +565,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   forceinline size_t
-  LayeredGraph<View,Val,Degree,StateIdx>::dispose(Space& home) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::dispose(Space& home) {
     c.dispose(home);
     (void) Propagator::dispose(home);
     return sizeof(*this);
@@ -572,7 +573,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   ExecStatus
-  LayeredGraph<View,Val,Degree,StateIdx>::propagate(Space& home,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::propagate(Space& home,
                                                     const ModEventDelta&) {
     // Forward pass
     for (int i=i_ch.fst(); i<=i_ch.lst(); i++) {
@@ -657,7 +658,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   template<class Var>
   ExecStatus
-  LayeredGraph<View,Val,Degree,StateIdx>::post(Home home, 
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::post(Home home, 
                                                const VarArgArray<Var>& x,
                                                const DFA& dfa) {
     if (x.size() == 0) {
@@ -669,19 +670,19 @@ namespace Gecode { namespace Int { namespace Extensional {
     assert(x.size() > 0);
     for (int i=x.size(); i--; ) {
       DFA::Symbols s(dfa);
-      typename VarTraits<Var>::View xi(x[i]);
+      typename OVarTraits<Var>::View xi(x[i]);
       GECODE_ME_CHECK(xi.inter_v(home,s,false));
     }
-    LayeredGraph<View,Val,Degree,StateIdx>* p =
-      new (home) LayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa);
+    OpenLayeredGraph<View,Val,Degree,StateIdx>* p =
+      new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa);
     return p->initialize(home,x,dfa);
   }
 
   template<class View, class Val, class Degree, class StateIdx>
   forceinline
-  LayeredGraph<View,Val,Degree,StateIdx>
-  ::LayeredGraph(Space& home, bool share,
-                 LayeredGraph<View,Val,Degree,StateIdx>& p)
+  OpenLayeredGraph<View,Val,Degree,StateIdx>
+  ::OpenLayeredGraph(Space& home, bool share,
+                 OpenLayeredGraph<View,Val,Degree,StateIdx>& p)
     : Propagator(home,share,p), 
       n(p.n), layers(home.alloc<Layer>(n+1)),
       max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges) {
@@ -714,14 +715,14 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   PropCost
-  LayeredGraph<View,Val,Degree,StateIdx>::cost(const Space&,
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::cost(const Space&,
                                                const ModEventDelta&) const {
     return PropCost::linear(PropCost::HI,n);
   }
 
   template<class View, class Val, class Degree, class StateIdx>
   Actor*
-  LayeredGraph<View,Val,Degree,StateIdx>::copy(Space& home, bool share) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::copy(Space& home, bool share) {
     // Eliminate an assigned prefix
     {
       int k=0;
@@ -822,13 +823,13 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     audit();
 
-    return new (home) LayeredGraph<View,Val,Degree,StateIdx>(home,share,*this);
+    return new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,share,*this);
   }
 
   /// Select small types for the layered graph propagator
   template<class Var>
   forceinline ExecStatus
-  post_lgp(Home home, const VarArgArray<Var>& x, const DFA& dfa) {
+  post_olgp(Home home, const VarArgArray<Var>& x, const DFA& dfa) {
     Gecode::Support::IntType t_state_idx =
       Gecode::Support::u_type(static_cast<unsigned int>(dfa.n_states()));
     Gecode::Support::IntType t_degree =
@@ -843,16 +844,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_CHAR:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned char,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned char,unsigned char>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned short int,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned char>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned int,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned int,unsigned char>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
@@ -860,16 +861,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_SHRT:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned char,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned char,unsigned short int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned short int,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned short int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned int,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned int,unsigned short int>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
@@ -877,16 +878,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_INT:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned char,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned char,unsigned int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned short int,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,short int,unsigned int,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,short int,unsigned int,unsigned int>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
@@ -899,16 +900,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_CHAR:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned char,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned char,unsigned char>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned short int,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned short int,unsigned char>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned int,unsigned char>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned int,unsigned char>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
@@ -916,16 +917,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_SHRT:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned char,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned char,unsigned short int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned short int,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned short int,unsigned short int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned int,unsigned short int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned int,unsigned short int>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
@@ -933,16 +934,16 @@ namespace Gecode { namespace Int { namespace Extensional {
       case Gecode::Support::IT_INT:
         switch (t_degree) {
         case Gecode::Support::IT_CHAR:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned char,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned char,unsigned int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_SHRT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned short int,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned short int,unsigned int>
             ::post(home,x,dfa);
         case Gecode::Support::IT_INT:
-          return Extensional::LayeredGraph
-            <typename VarTraits<Var>::View,int,unsigned int,unsigned int>
+          return Extensional::OpenLayeredGraph
+            <typename OVarTraits<Var>::View,int,unsigned int,unsigned int>
             ::post(home,x,dfa);
         default: GECODE_NEVER;
         }
