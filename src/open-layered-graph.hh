@@ -127,6 +127,8 @@ namespace Gecode { namespace Int { namespace Extensional {
        /// Return last position
        int lst(void) const;
      };
+     /// The original DFA
+     DFA dfa;
      /// The advisor council
      Council<Index> c;
      /// Number of layers (and views)
@@ -162,7 +164,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// Initialize layered graph
      template<class Var>
      ExecStatus initialize(Space& home, 
-                           const VarArgArray<Var>& x, const DFA& dfa);
+                           const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length);
      /// Constructor for cloning \a p
      OpenLayeredGraph(Space& home, bool share,
                   OpenLayeredGraph<View,Val,Degree,StateIdx>& p);
@@ -170,7 +172,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// Constructor for posting
      template<class Var>
      OpenLayeredGraph(Home home, 
-                  const VarArgArray<Var>& x, const DFA& dfa);
+                  const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length);
      /// Copy propagator during cloning
      virtual Actor* copy(Space& home, bool share);
      /// Cost function (defined as high linear)
@@ -184,13 +186,13 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// Post propagator on views \a x and DFA \a dfa
      template<class Var>
      static ExecStatus post(Home home, 
-                            const VarArgArray<Var>& x, const DFA& dfa);
+                            const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length);
    };
 
    /// Select small types for the layered graph propagator
    template<class Var>
-   ExecStatus post_olgp(Home home, 
-                       const VarArgArray<Var>& x, const DFA& dfa);
+   ExecStatus post_lgp(Home home, 
+                       const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length);
 
 }}}
 

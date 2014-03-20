@@ -9,12 +9,13 @@
 namespace Gecode {
 
 	void
-	extensional(Home home, const IntVarArgs& x, DFA dfa, const IntVar n) {
+	extensional(Home home, const IntVarArgs& x, DFA dfa, IntVar length) {
 		using namespace Int;
 		if (x.same(home))
 			throw ArgumentSame("Int::extensional");
 		if (home.failed()) return;
-		GECODE_ES_FAIL(Extensional::post_olgp(home,x,dfa));
+    Int::IntView n(length);
+		GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa,n));
 	}
 }
 
@@ -216,9 +217,12 @@ namespace Gecode { namespace Int { namespace Extensional {
   forceinline
   OpenLayeredGraph<View,Val,Degree,StateIdx>::OpenLayeredGraph(Home home,
                                                        const VarArgArray<Var>& x, 
-                                                       const DFA& dfa)
-    : Propagator(home), c(home), n(x.size()), 
-      max_states(static_cast<StateIdx>(dfa.n_states())) {
+                                                       const DFA& dfa,
+                                                       Int::IntView length)
+    : Propagator(home), c(home), n(length.min()), 
+      max_states(static_cast<StateIdx>(dfa.n_states())),
+      dfa(dfa) {
+    length.subscribe(home,*this,Int::PC_INT_DOM);
     assert(n > 0);
   }
 
@@ -249,10 +253,12 @@ namespace Gecode { namespace Int { namespace Extensional {
   forceinline ExecStatus
   OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
                                                      const VarArgArray<Var>& x, 
-                                                     const DFA& dfa) {
+                                                     const DFA& dfa,
+                                                     Int::IntView length) {
 
     Region r(home);
 
+    
     // Allocate memory for layers
     layers = home.alloc<Layer>(n+1);
 
@@ -660,7 +666,8 @@ namespace Gecode { namespace Int { namespace Extensional {
   ExecStatus
   OpenLayeredGraph<View,Val,Degree,StateIdx>::post(Home home, 
                                                const VarArgArray<Var>& x,
-                                               const DFA& dfa) {
+                                               const DFA& dfa,
+                                               Int::IntView length) {
     if (x.size() == 0) {
       // Check whether the start state 0 is also a final state
       if ((dfa.final_fst() <= 0) && (dfa.final_lst() >= 0))
@@ -674,8 +681,8 @@ namespace Gecode { namespace Int { namespace Extensional {
       GECODE_ME_CHECK(xi.inter_v(home,s,false));
     }
     OpenLayeredGraph<View,Val,Degree,StateIdx>* p =
-      new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa);
-    return p->initialize(home,x,dfa);
+      new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa,length);
+    return p->initialize(home,x,dfa,length);
   }
 
   template<class View, class Val, class Degree, class StateIdx>
@@ -685,7 +692,8 @@ namespace Gecode { namespace Int { namespace Extensional {
                  OpenLayeredGraph<View,Val,Degree,StateIdx>& p)
     : Propagator(home,share,p), 
       n(p.n), layers(home.alloc<Layer>(n+1)),
-      max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges) {
+      max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges),
+      dfa(dfa) {
     c.update(home,share,p.c);
     // Do not allocate states, postpone to advise!
     layers[n].n_states = p.layers[n].n_states;
@@ -829,7 +837,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   /// Select small types for the layered graph propagator
   template<class Var>
   forceinline ExecStatus
-  post_olgp(Home home, const VarArgArray<Var>& x, const DFA& dfa) {
+  post_lgp(Home home, const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length) {
     Gecode::Support::IntType t_state_idx =
       Gecode::Support::u_type(static_cast<unsigned int>(dfa.n_states()));
     Gecode::Support::IntType t_degree =
@@ -846,15 +854,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned char,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned int,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
@@ -863,15 +871,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned char,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned int,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
@@ -880,15 +888,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned char,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned short int,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,short int,unsigned int,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
@@ -902,15 +910,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned char,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned short int,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned int,unsigned char>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
@@ -919,15 +927,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned char,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned short int,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned int,unsigned short int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
@@ -936,15 +944,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         case Gecode::Support::IT_CHAR:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned char,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_SHRT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned short int,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         case Gecode::Support::IT_INT:
           return Extensional::OpenLayeredGraph
             <typename OVarTraits<Var>::View,int,unsigned int,unsigned int>
-            ::post(home,x,dfa);
+            ::post(home,x,dfa,length);
         default: GECODE_NEVER;
         }
         break;
