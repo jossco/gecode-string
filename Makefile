@@ -1,4 +1,4 @@
-GECODE_BASE = /Users/joe/local/gecode-4.1.0
+GECODE_BASE = /Users/joe/local/gecode-4.2.0
 GECODE_INCL = $(GECODE_BASE)/include
 SRCDIR = src
 CXX = g++-4.8
@@ -23,7 +23,7 @@ ifneq (,$(findstring clang,$(CXX)))
 override LIBS += -stdlib=libstdc++
 endif
 
-LINK_TARGET =
+LINK_TARGET = pentominoes
 
 ALT_TARGETS =
 
