@@ -1,7 +1,9 @@
 #include <open-layered-graph.hh>
 #include <climits>
 #include <algorithm>
+#include <fst/fstlib.h>
 
+using namespace fst;
 
 /*	from
 *	gecode/int/extensional.cpp
@@ -258,6 +260,19 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     Region r(home);
 
+    // distance[i] = shortest path from state i to a final state
+    StdVectorFst fst;
+    for (int i = 0; i < dfa.final_fst(); i++)
+      fst.AddState();
+    for (int i = dfa.final_fst(); i < dfa.final_lst(); i++) {
+      fst.AddState();
+      fst.SetFinal(i,1);
+    }
+    for (DFA::Transitions t(dfa); t(); ++t){
+      fst.AddArc(t.i_state(), StdArc(t.symbol(), t.symbol(), 1.0, t.o_state()));
+    }
+    vector<TropicalWeight> distance (dfa.n_states());
+    ShortestDistance(fst, &distance, true);
     
     // Allocate memory for layers
     layers = home.alloc<Layer>(n+1);
@@ -274,7 +289,8 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     // Mark initial state as being reachable
     i_state(0,0).i_deg = 1;
-
+    fst.SetStart(0);
+    
     // Forward pass: add transitions
     for (int i=0; i<n; i++) {
       layers[i].x = x[i];
