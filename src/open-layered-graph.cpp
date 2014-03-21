@@ -255,9 +255,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class Var>
   forceinline ExecStatus
   OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
-                                                     const VarArgArray<Var>& x, 
-                                                     const DFA& dfa,
-                                                     Int::IntView length) {
+                                                     const VarArgArray<Var>& x) {
 
     Region r(home);
 
@@ -700,7 +698,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     OpenLayeredGraph<View,Val,Degree,StateIdx>* p =
       new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa,length);
-    return p->initialize(home,x,dfa,length);
+    return p->initialize(home,x);
   }
 
   template<class View, class Val, class Degree, class StateIdx>

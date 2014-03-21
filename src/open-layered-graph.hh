@@ -166,7 +166,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// Initialize layered graph
      template<class Var>
      ExecStatus initialize(Space& home, 
-                           const VarArgArray<Var>& x, const DFA& dfa, Int::IntView length);
+                           const VarArgArray<Var>& x);
      /// Constructor for cloning \a p
      OpenLayeredGraph(Space& home, bool share,
                   OpenLayeredGraph<View,Val,Degree,StateIdx>& p);
