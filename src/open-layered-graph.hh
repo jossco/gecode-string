@@ -133,6 +133,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      Council<Index> c;
      /// Number of layers (and views)
      int n;
+     /// The bounded length
+     Int::IntView length;
      /// The layers of the graph
      Layer* layers;
      /// Maximal number of states per layer

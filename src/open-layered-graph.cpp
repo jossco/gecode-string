@@ -223,8 +223,9 @@ namespace Gecode { namespace Int { namespace Extensional {
                                                        Int::IntView length)
     : Propagator(home), c(home), n(length.min()), 
       max_states(static_cast<StateIdx>(dfa.n_states())),
-      dfa(dfa) {
-    length.subscribe(home,*this,Int::PC_INT_DOM);
+      dfa(dfa),
+      length(length) {
+    length.subscribe(home,*this,Int::PC_INT_BND);
     assert(n > 0);
   }
 
@@ -588,6 +589,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   forceinline size_t
   OpenLayeredGraph<View,Val,Degree,StateIdx>::dispose(Space& home) {
+    length.cancel(home, *this, Int::PC_INT_BND);
     c.dispose(home);
     (void) Propagator::dispose(home);
     return sizeof(*this);
@@ -684,13 +686,13 @@ namespace Gecode { namespace Int { namespace Extensional {
                                                const VarArgArray<Var>& x,
                                                const DFA& dfa,
                                                Int::IntView length) {
-    if (x.size() == 0) {
+    if (length.max() == 0) {
       // Check whether the start state 0 is also a final state
       if ((dfa.final_fst() <= 0) && (dfa.final_lst() >= 0))
         return ES_OK;
       return ES_FAILED;
     }
-    assert(x.size() > 0);
+    assert(length.min() > 0);
     for (int i=x.size(); i--; ) {
       DFA::Symbols s(dfa);
       typename OVarTraits<Var>::View xi(x[i]);
