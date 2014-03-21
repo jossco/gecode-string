@@ -135,6 +135,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      int n;
      /// The bounded length
      Int::IntView length;
+     /// The distance from node i to any final state in the dfa
+     int *distance;
      /// The layers of the graph
      Layer* layers;
      /// Maximal number of states per layer
