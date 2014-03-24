@@ -272,7 +272,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     vector<TropicalWeight> d (dfa.n_states());
     ShortestDistance(fst, &d, true);
-    distance = r.alloc<int>(dfa.n_states());
+    distance = home.alloc<int>(dfa.n_states());
     for (int i = 0; i < dfa.n_states(); i++)
       distance[i] = static_cast<int>(d[i].Value());
     
