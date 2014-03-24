@@ -66,6 +66,16 @@ namespace Gecode { namespace Int { namespace Extensional {
     i_deg=o_deg=0; 
   }
 
+  template<class View, class Val, class Degree, class StateIdx>
+  forceinline bool
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::dfa_final(int i) {
+    for (int s=dfa.final_fst(); s<dfa.final_lst(); s++){
+      if (o_state(i-1,static_cast<StateIdx>(s)).o_deg != 0) {
+        return true;
+      }
+    }
+    return false;
+  }
   
   template<class View, class Val, class Degree, class StateIdx>
   forceinline typename OpenLayeredGraph<View,Val,Degree,StateIdx>::State& 

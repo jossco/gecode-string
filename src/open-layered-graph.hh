@@ -151,6 +151,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      IndexRange o_ch;
      /// Index range for any change (for compression)
      IndexRange a_ch;
+     /// Check if layer \a i has at least one out edge for a dfa-final state
+     bool dfa_final(int i);
      /// Return in state for layer \a i and state index \a is
      State& i_state(int i, StateIdx is);
      /// Return in state for layer \a i and in state of edge \a e
