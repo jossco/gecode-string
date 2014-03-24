@@ -298,11 +298,13 @@ namespace Gecode { namespace Int { namespace Extensional {
     // even though we only use length.min()+1.
     layers = home.alloc<Layer>(length.max()+1);
 
-    // Allocate temporary memory for all possible states
-    State* states = r.alloc<State>(max_states*(n+1));
-    for (int i=static_cast<int>(max_states)*(n+1); i--; )
+    // Allocate memory for all possible states
+    // This is the permanent allocation from the home space,
+    // since we won't be doing the compression stage later anyway.
+    State* states = home.alloc<State>(max_states*(length.max()+1));
+    for (int i=static_cast<int>(max_states)*(length.max()+1); i--; )
       states[i].init();
-    for (int i=n+1; i--; )
+    for (int i=length.max()+1; i--; )
       layers[i].states = states + i*max_states;
 
     // Allocate temporary memory for edges
@@ -399,87 +401,6 @@ namespace Gecode { namespace Int { namespace Extensional {
       GECODE_ME_CHECK(layers[i].x.narrow_v(home,lv,false));
       if (!layers[i].x.assigned())
         layers[i].x.subscribe(home, *new (home) Index(home,*this,c,i));
-    }
-
-    // Copy and compress states, setup other information
-    {
-      // State map for in-states
-      StateIdx* i_map = r.alloc<StateIdx>(max_states);
-      // State map for out-states
-      StateIdx* o_map = r.alloc<StateIdx>(max_states);
-      // Number of in-states
-      StateIdx i_n = 0;
-
-      // Initialize map for in-states (special for last layer)
-      // Degree for single final state
-      unsigned int d = 0;
-      for (StateIdx j=max_states; j--; )
-        d += static_cast<unsigned int>(layers[n].states[j].i_deg);
-      // Check whether all final states can be joined to a single state
-      if (d > 
-          static_cast<unsigned int>
-          (Gecode::Support::IntTypeTraits<Degree>::max)) {
-        // Initialize map for in-states
-        for (StateIdx j=max_states; j--; )
-          if ((layers[n].states[j].o_deg != 0) ||
-              (layers[n].states[j].i_deg != 0))
-            i_map[j]=i_n++;
-      } else {
-        i_n = 1;
-        for (StateIdx j=max_states; j--; ) {
-          layers[n].states[j].init();
-          i_map[j] = 0;
-        }
-        layers[n].states[0].i_deg = static_cast<Degree>(d);
-        layers[n].states[0].o_deg = 1;
-      }
-      layers[n].n_states = i_n;
-      
-      // Total number of states
-      n_states = i_n;
-      // Total number of edges
-      n_edges = 0;
-      // New maximal number of states
-      StateIdx max_s = i_n;
-
-      for (int i=n; i--; ) {
-        // In-states become out-states
-        std::swap(o_map,i_map); i_n=0;
-        // Initialize map for in-states
-        for (StateIdx j=max_states; j--; )
-          if ((layers[i].states[j].o_deg != 0) ||
-              (layers[i].states[j].i_deg != 0))
-            i_map[j]=i_n++;
-        layers[i].n_states = i_n;
-        n_states += i_n;
-        max_s = std::max(max_s,i_n);
-
-        // Update states in edges
-        for (ValSize j=layers[i].size; j--; ) {
-          Support& s = layers[i].support[j];
-          n_edges += s.n_edges;
-          for (Degree d=s.n_edges; d--; ) {
-            s.edges[d].i_state = i_map[s.edges[d].i_state];
-            s.edges[d].o_state = o_map[s.edges[d].o_state];
-          }
-        }
-      }
-
-      // Allocate and copy states
-      State* a_states = home.alloc<State>(n_states);
-      for (int i=n+1; i--; ) {
-        StateIdx k=0;
-        for (StateIdx j=max_states; j--; )
-          if ((layers[i].states[j].o_deg != 0) ||
-              (layers[i].states[j].i_deg != 0))
-            a_states[k++] = layers[i].states[j];
-        assert(k == layers[i].n_states);
-        layers[i].states = a_states;
-        a_states += layers[i].n_states;
-      }
-      
-      // Update maximal number of states
-      max_states = max_s;
     }
 
     // Schedule if subsumption is needed
