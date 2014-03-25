@@ -137,6 +137,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      Int::IntView length;
      /// The distance from node i to any final state in the dfa
      int *distance;
+     /// min distance from last layer in lgp, to any dfa-final state
+     int mindist;
      /// The layers of the graph
      Layer* layers;
      /// Maximal number of states per layer
@@ -167,6 +169,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      bool o_dec(int i, const Edge& e);
      /// Perform consistency check on data structures
      void audit(void);
+     /// Add new layers to layered graph
+     ExecStatus extend(Space& home);
      /// Initialize layered graph
      template<class Var>
      ExecStatus initialize(Space& home, 

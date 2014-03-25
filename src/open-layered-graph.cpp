@@ -262,12 +262,75 @@ namespace Gecode { namespace Int { namespace Extensional {
   }
 
   template<class View, class Val, class Degree, class StateIdx>
+  forceinline ExecStatus
+    OpenLayeredGraph<View,Val,Degree,StateIdx>::extend(Space& home) {
+      if (n < length.min()) {
+        Region r(home);
+        // Allocate temporary memory for edges
+        Edge* edges = r.alloc<Edge>(dfa.max_degree());
+        
+        // undo outgoing edges of "final" states in previous last layer
+        if (n > 0) {
+          for (int s = 0; s < dfa.final_fst(); s++)
+            o_state(n-1, static_cast<StateIdx>(s)).o_deg = 0;
+        }
+        
+        // Forward pass: add transitions
+        for (int i=n; i<length.min(); i++) {
+          layers[i].support = home.alloc<Support>(layers[i].x.size());
+          ValSize j=0;
+          // Enter links leaving reachable states (indegree != 0)
+          for (ViewValues<View> nx(layers[i].x); nx(); ++nx) {
+            Degree n_edges=0;
+            for (DFA::Transitions t(dfa,nx.val()); t(); ++t)
+              if (i_state(i,static_cast<StateIdx>(t.i_state())).i_deg != 0) {
+                i_state(i,static_cast<StateIdx>(t.i_state())).o_deg++;
+                o_state(i,static_cast<StateIdx>(t.o_state())).i_deg++;
+                edges[n_edges].i_state = static_cast<StateIdx>(t.i_state());
+                edges[n_edges].o_state = static_cast<StateIdx>(t.o_state());
+                n_edges++;
+              }
+            assert(n_edges <= dfa.max_degree());
+            // Found support for value
+            if (n_edges > 0) {
+              Support& s = layers[i].support[j];
+              s.val = static_cast<Val>(nx.val());
+              s.n_edges = n_edges;
+              s.edges = Heap::copy(home.alloc<Edge>(n_edges),edges,n_edges);
+              j++;
+            }
+          }
+          if ((layers[i].size = j) == 0)
+            return ES_FAILED;
+        }
+        n = length.min();
+      }
+      // Mark states that are "close enough" to a final state
+      mindist = length.max() + 1;
+      for (int s=0; s < dfa.final_fst(); s++) {
+        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
+            && distance[s] + n <= length.max()) {
+            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+            if (mindist > distance[s])
+              mindist = distance[s];
+          }
+        }
+    
+      // Mark final states as reachable
+      for (int s=dfa.final_fst(); s<dfa.final_lst(); s++){
+        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0) {
+          o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+          mindist = 0;
+        }
+      }
+      return ES_OK;
+    }
+  
+  template<class View, class Val, class Degree, class StateIdx>
   template<class Var>
   forceinline ExecStatus
   OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
                                                      const VarArgArray<Var>& x) {
-
-    Region r(home);
 
     // distance[i] = shortest path from state i to a final state
     StdVectorFst fst;
@@ -286,16 +349,13 @@ namespace Gecode { namespace Int { namespace Extensional {
     for (int i = 0; i < dfa.n_states(); i++)
       distance[i] = static_cast<int>(d[i].Value());
     
-    if (n < distance[0]) {
-      // Shortest satisfying string is longer than length.min()
-      if (length.gr(home, distance[0]) == Int::ME_INT_FAILED)
+    // shortest accepted string gives a lower bound on length
+    if (length.gr(home, distance[0]) == Int::ME_INT_FAILED)
         return ES_FAILED;
-      n = distance[0];
-    }
     
     // Allocate memory for layers
-    // We allocate enough for length.max() up front,
-    // even though we only use length.min()+1.
+    // Allocate enough for length.max() up front,
+    // even though only length.min()+1 layers used now.
     layers = home.alloc<Layer>(length.max()+1);
 
     // Allocate memory for all possible states
@@ -304,81 +364,24 @@ namespace Gecode { namespace Int { namespace Extensional {
     State* states = home.alloc<State>(max_states*(length.max()+1));
     for (int i=static_cast<int>(max_states)*(length.max()+1); i--; )
       states[i].init();
-    for (int i=length.max()+1; i--; )
+    for (int i=length.max()+1; i--; ) {
       layers[i].states = states + i*max_states;
-
-    // Allocate temporary memory for edges
-    Edge* edges = r.alloc<Edge>(dfa.max_degree());
+      layers[i].x = x[i];
+    }
 
     // Mark initial state as being reachable
     i_state(0,0).i_deg = 1;
     fst.SetStart(0);
     
-    int finished_layers = 0;
-    while (finished_layers < n){
-      // Forward pass: add transitions
-      for (int i=finished_layers; i<n; i++) {
-        layers[i].x = x[i];
-        layers[i].support = home.alloc<Support>(layers[i].x.size());
-        ValSize j=0;
-        // Enter links leaving reachable states (indegree != 0)
-        for (ViewValues<View> nx(layers[i].x); nx(); ++nx) {
-          Degree n_edges=0;
-          for (DFA::Transitions t(dfa,nx.val()); t(); ++t)
-            if (i_state(i,static_cast<StateIdx>(t.i_state())).i_deg != 0) {
-              i_state(i,static_cast<StateIdx>(t.i_state())).o_deg++;
-              o_state(i,static_cast<StateIdx>(t.o_state())).i_deg++;
-              edges[n_edges].i_state = static_cast<StateIdx>(t.i_state());
-              edges[n_edges].o_state = static_cast<StateIdx>(t.o_state());
-              n_edges++;
-            }
-          assert(n_edges <= dfa.max_degree());
-          // Found support for value
-          if (n_edges > 0) {
-            Support& s = layers[i].support[j];
-            s.val = static_cast<Val>(nx.val());
-            s.n_edges = n_edges;
-            s.edges = Heap::copy(home.alloc<Edge>(n_edges),edges,n_edges);
-            j++;
-          }
-        }
-        if ((layers[i].size = j) == 0)
-          return ES_FAILED;
-      }
-
-      // Mark states that are "close enough" to a final state
-      int mindist = length.max();
-      for (int s=0; s < dfa.final_fst(); s++) {
-        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-            && distance[s] + n <= length.max()) {
-            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-            if (mindist > distance[s])
-              mindist = distance[s];
-          }
-        }
-    
-      // Mark final states as reachable
-      int final_count = 0;
-      for (int s=dfa.final_fst(); s<dfa.final_lst(); s++){
-        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0) {
-          o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-          final_count++;
-        }
-      }
-      
-      finished_layers = n;
+    while (n < length.min()){
+      // Add new layers
+      if (extend(home) == ES_FAILED)
+        return ES_FAILED;
       // Increase min length if there are no dfa-final states in last layer
-      if(final_count == 0) {
-        // Increase minimum length
-        if (length.gr(home, n + mindist) == Int::ME_INT_FAILED)
+      if (length.gr(home, n + mindist) == Int::ME_INT_FAILED)
           return ES_FAILED;
-        // undo outgoing edges from (old) last layer
-        for (int s = 0; s < dfa.final_fst(); s++)
-          o_state(n-1, static_cast<StateIdx>(s)).o_deg = 0;
-        n = length.min();
-      
-      }
     }
+    
     // Backward pass: prune all transitions that do not lead to final state
     for (int i=n; i--; ) {
       ValSize k=0;
