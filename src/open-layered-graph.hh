@@ -2,7 +2,7 @@
 #define __GECODE_OPEN_LG_HH__
 
 #include <gecode/int.hh>
-
+#include <gecode/int/extensional.hh>
 /* from
 *	gecode/int.hh:
 */

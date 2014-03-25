@@ -231,12 +231,12 @@ namespace Gecode { namespace Int { namespace Extensional {
                                                        const VarArgArray<Var>& x, 
                                                        const DFA& dfa,
                                                        Int::IntView length)
-    : Propagator(home), c(home), n(length.min()), 
+    : Propagator(home), c(home), n(0), 
       max_states(static_cast<StateIdx>(dfa.n_states())),
       dfa(dfa),
       length(length) {
     length.subscribe(home,*this,Int::PC_INT_BND);
-    assert(n > 0);
+    assert(length.max() > 0);
   }
 
   template<class View, class Val, class Degree, class StateIdx>
@@ -407,8 +407,17 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
 
     // Schedule if subsumption is needed
-    if (c.empty())
-      View::schedule(home,*this,ME_INT_VAL);
+    if (length.assigned()){
+      if (c.empty())
+        View::schedule(home,*this,ME_INT_VAL);
+      else {
+        VarArgArray<Var> _x;
+        for (int i = 0; i < length.val(); i++){
+          _x << layers[i].x;
+        }
+        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,dfa));
+      }
+    }
 
     audit();
     return ES_OK;
