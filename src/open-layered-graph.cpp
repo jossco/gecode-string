@@ -56,6 +56,20 @@ namespace Gecode { namespace Int { namespace Extensional {
     typedef Int::BoolView View;
   };
 
+  template<class View>
+  class OViewTraits {};
+  
+  template<>
+  class OViewTraits<Int::IntView> {
+  public:
+    typedef IntVar Var;
+  };
+  
+  template<>
+  class OViewTraits<Int::BoolView> {
+  public:
+    typedef BoolVar Var;
+  };
 
   /*
    * States
@@ -667,8 +681,17 @@ namespace Gecode { namespace Int { namespace Extensional {
     audit();
 
     // Check subsumption
-    if (c.empty())
-      return home.ES_SUBSUMED(*this);
+    if (length.assigned()){
+      if (c.empty())
+        return home.ES_SUBSUMED(*this);
+      else {
+        VarArgArray<typename OViewTraits<View>::Var> _x;
+        for (int i = 0; i < length.val(); i++){
+          _x << layers[i].x;
+        }
+        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,dfa));
+      }
+    }
     else
       return ES_FIX;
   }
