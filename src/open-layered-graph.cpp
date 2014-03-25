@@ -586,8 +586,8 @@ namespace Gecode { namespace Int { namespace Extensional {
     for (int i=i_ch.fst(); i<=i_ch.lst(); i++) {
       bool i_mod = false;
       bool o_mod = false;
-      ValSize j=0;
-      ValSize k=0;
+      ValSize j=0;  // index for values with prior support
+      ValSize k=0;  // index for values that still have support
       ValSize s=layers[i].size;
       do {
         Support& s=layers[i].support[j];
@@ -616,7 +616,14 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (i_mod && (i+1 < n))
         i_ch.add(i+1);
     }
-
+    
+    // Extend layered graph if min length has increased
+    int advisor_lst = n;
+    if (n < length.min())
+      o_ch.add(length.min()-1);
+    if (extend(home) == ES_FAILED)
+      return ES_FAILED;
+    
     // Backward pass
     for (int i=o_ch.lst(); i>=o_ch.fst(); i--) {
       bool o_mod = false;
@@ -648,7 +655,12 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (o_mod && (i > 0))
         o_ch.add(i-1);
     }
-
+    
+    // Subscribe to newly created layers
+    for (int i = advisor_lst; i < n; i++)
+      if (!layers[i].x.assigned())
+        layers[i].x.subscribe(home, *new (home) Index(home,*this,c,i));
+    
     a_ch.add(i_ch); i_ch.reset();
     a_ch.add(o_ch); o_ch.reset();
 
