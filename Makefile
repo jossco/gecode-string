@@ -2,17 +2,14 @@ GECODE_BASE = /Users/joe/local/gecode-4.2.0
 GECODE_INCL = $(GECODE_BASE)/include
 SRCDIR = src
 CXX = g++-4.8
-DEBUGFLAGS = 
-OPTFLAGS = 
-CPPFLAGS = $(OPTFLAGS)
-override CPPFLAGS += -I$(SRCDIR)
+override CXXFLAGS += -I$(SRCDIR) -I$(GECODE_INCL)
 GIST = true
 LDFLAGS = -L$(GECODE_BASE)/lib
-LIBS = -lgecodedriver
+LDLIBS = -lgecodedriver
 ifneq "$(strip $(GIST))" "false"
-LIBS += -lgecodegist
+LDLIBS += -lgecodegist
 endif
-LIBS += \
+LDLIBS += \
 	-lgecodesearch \
 	-lgecodeminimodel\
 	-lgecodeint \
@@ -20,12 +17,13 @@ LIBS += \
 	-lgecodesupport \
 	-lfst
 ifneq (,$(findstring clang,$(CXX)))
-override LIBS += -stdlib=libstdc++
+override LDLIBS += -stdlib=libstdc++
 endif
 
-LINK_TARGET = pentominoes
+LINK_TARGET = 	revenant
 
-ALT_TARGETS =
+ALT_TARGETS = 	dfa2fst \
+				pentominoes
 
 MODULES = open-layered-graph.o
 
@@ -39,6 +37,10 @@ all : $(LINK_TARGET)
 	@echo All done
 .PHONY : all
 
+.PHONY : debug
+debug : CXXFLAGS += -ggdb
+debug : all
+
 .PHONY : clean
 clean :
 	rm -f $(REBUILDABLES)
@@ -49,20 +51,26 @@ clean :
 	@echo Clean done
 	
 $(LINK_TARGET) : % : %.o $(MODULES)
-	$(CXX) $(DEBUGFLAGS) -o $@ $(LDFLAGS) $^ $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 $(ALT_TARGETS) : % : %.o $(MODULES)
-	$(CXX) $(DEBUGFLAGS) -o $@ $(LDFLAGS) $^ $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 # $@ for the pattern-matched target
 # $< for the pattern-matched dependency
 %.o : $(SRCDIR)/%.cpp
-	$(CXX) $(DEBUGFLAGS) $(CPPFLAGS) -I$(GECODE_INCL) -o $@ -c $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 	
 %.d: $(SRCDIR)/%.cpp
 	@set -e; rm -f $@; \
-	$(CXX) -MM $(CPPFLAGS) -I$(GECODE_INCL) $< > $@.$$$$; \
+	$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
-
+%.pdf: %.ps
+	ps2pdf $< $@
+%.ps: %.dot
+	dot -Tps $< > $@
+%.dot: %.fst
+	fstdraw --isymbols=isyms.txt $< $@
+	
 include $(OBJS:.o=.d)
 include $(MODULES:.o=.d)
