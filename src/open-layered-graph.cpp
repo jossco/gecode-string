@@ -66,16 +66,16 @@ namespace Gecode { namespace Int { namespace Extensional {
   };
 
   template<class View>
-  class OViewTraits {};
+  class ViewTraits {};
   
   template<>
-  class OViewTraits<Int::IntView> {
+  class ViewTraits<Int::IntView> {
   public:
     typedef IntVar Var;
   };
   
   template<>
-  class OViewTraits<Int::BoolView> {
+  class ViewTraits<Int::BoolView> {
   public:
     typedef BoolVar Var;
   };
@@ -694,7 +694,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (c.empty())
         return home.ES_SUBSUMED(*this);
       else {
-        VarArgArray<typename OViewTraits<View>::Var> _x;
+        VarArgArray<typename ViewTraits<View>::Var> _x;
         for (int i = 0; i < length.val(); i++){
           _x << layers[i].x;
         }
