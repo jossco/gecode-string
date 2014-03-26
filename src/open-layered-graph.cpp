@@ -294,8 +294,9 @@ namespace Gecode { namespace Int { namespace Extensional {
         
         // undo outgoing edges of "final" states in previous last layer
         if (n > 0) {
-          for (int s = 0; s < dfa.final_fst(); s++)
-            o_state(n-1, static_cast<StateIdx>(s)).o_deg = 0;
+          for (int s = 0; s < dfa.n_states(); s++)
+            if (s < dfa.final_fst() || s >= dfa.final_lst())
+              o_state(n-1, static_cast<StateIdx>(s)).o_deg = 0;
         }
         
         // Forward pass: add transitions
@@ -330,13 +331,14 @@ namespace Gecode { namespace Int { namespace Extensional {
       }
       // Mark states that are "close enough" to a final state
       mindist = length.max() + 1;
-      for (int s=0; s < dfa.final_fst(); s++) {
-        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-            && distance[s] + n <= length.max()) {
-            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-            if (mindist > distance[s])
-              mindist = distance[s];
-          }
+      for (int s=0; s < dfa.n_states(); s++) {
+        if (s < dfa.final_fst() || s >= dfa.final_lst())
+          if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
+              && distance[s] + n < length.max()) {
+              o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+              if (mindist > distance[s])
+                mindist = distance[s];
+            }
         }
     
       // Mark final states as reachable
@@ -357,10 +359,10 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     // distance[i] = shortest path from state i to a final state
     StdVectorFst fst;
-    for (int i = 0; i < dfa.final_fst(); i++)
+    for (int i = 0; i < dfa.n_states(); i++)
       fst.AddState();
+    fst.SetStart(0);
     for (int i = dfa.final_fst(); i < dfa.final_lst(); i++) {
-      fst.AddState();
       fst.SetFinal(i,1);
     }
     for (DFA::Transitions t(dfa); t(); ++t){
@@ -387,14 +389,13 @@ namespace Gecode { namespace Int { namespace Extensional {
     State* states = home.alloc<State>(max_states*(length.max()+1));
     for (int i=static_cast<int>(max_states)*(length.max()+1); i--; )
       states[i].init();
-    for (int i=length.max()+1; i--; ) {
+    for (int i=length.max(); i--; ) {
       layers[i].states = states + i*max_states;
       layers[i].x = x[i];
     }
 
     // Mark initial state as being reachable
     i_state(0,0).i_deg = 1;
-    fst.SetStart(0);
     
     while (n < length.min()){
       // Add new layers
