@@ -428,6 +428,17 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (!layers[i].x.assigned())
         layers[i].x.subscribe(home, *new (home) Index(home,*this,c,i));
     }
+    
+    /*
+      TODO: State Compression
+    
+    Even without using heap allocation, could benefit from an intial compression
+    of states in layers 1:n-1.
+    layer[n] is tricky: currently rely on the state indices being equivalent to the dfa states.
+    Two choices:
+      1) Don't compress layer n
+      2) Do compress layer n, but keep track of the first/last dfa-final state after compression
+    */
 
     // Schedule if subsumption is needed
     if (length.assigned()){
@@ -776,6 +787,15 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   Actor*
   OpenLayeredGraph<View,Val,Degree,StateIdx>::copy(Space& home, bool share) {
+    /*
+      TODO
+    
+    Eliminating an assigned prefix is still a valid idea. 
+    BUT it changes the relationship between the layers of the graph and the length var.
+    Would need to track the size of all eliminated prefixes, 
+    and modify all references to length.min(), length.max() accordingly.
+    */
+    
     // // Eliminate an assigned prefix
     // {
     //   int k=0;
@@ -805,6 +825,19 @@ namespace Gecode { namespace Int { namespace Extensional {
     // }
     // audit();
 
+    /*
+      TODO
+    
+    State compression here doesn't change the size of the memory allocation.
+    Compression is internal to each layer:
+      eliminate dead states from layer,
+      map remaining states to contiguous elements starting at 1
+      reduce layer[i].n_states to the new maximum.
+    Results in better iteration inside a single layer.
+    
+    Could restore this, but have to handle the last layer differently.
+    */
+    
     // // Compress states
     // if (!a_ch.empty()) {
     //   int f = a_ch.fst();
