@@ -22,6 +22,15 @@ namespace Gecode {
 }
 
 namespace Gecode { namespace Int { namespace Extensional {
+  /*
+    TODO
+    OVarTraits is just a copy of Extensional::VarTraits from layered-graph.hpp.
+    Unfortunately, VarTraits is NOT defined in extensional.hh, so it isn't visible
+    from here (as long as we're building this outside of gecode, anyway.)
+  
+    If this gets rolled into gecode/int/extensional, these declarations should be removed.
+  */
+  
   
   /**
    * \brief Traits class for variables
@@ -767,105 +776,105 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   Actor*
   OpenLayeredGraph<View,Val,Degree,StateIdx>::copy(Space& home, bool share) {
-    // Eliminate an assigned prefix
-    {
-      int k=0;
-      while (layers[k].size == 1) {
-        assert(layers[k].support[0].n_edges == 1);
-        n_states -= layers[k].n_states;
-        k++;
-      }
-      if (k > 0) {
-        /*
-         * The state information is always available: either the propagator
-         * has been created (hence, also the state information has been
-         * created), or the first variable become assigned and hence
-         * an advisor must have been run (which then has created the state
-         * information).
-         */
-        // Eliminate assigned layers
-        n -= k; layers += k;
-        // Eliminate edges
-        n_edges -= static_cast<unsigned int>(k);
-        // Update advisor indices
-        for (Advisors<Index> as(c); as(); ++as)
-          as.advisor().i -= k;
-        // Update all change information
-        a_ch.lshift(k);
-      }
-    }
-    audit();
+    // // Eliminate an assigned prefix
+    // {
+    //   int k=0;
+    //   while (layers[k].size == 1) {
+    //     assert(layers[k].support[0].n_edges == 1);
+    //     n_states -= layers[k].n_states;
+    //     k++;
+    //   }
+    //   if (k > 0) {
+    //     /*
+    //      * The state information is always available: either the propagator
+    //      * has been created (hence, also the state information has been
+    //      * created), or the first variable become assigned and hence
+    //      * an advisor must have been run (which then has created the state
+    //      * information).
+    //      */
+    //     // Eliminate assigned layers
+    //     n -= k; layers += k;
+    //     // Eliminate edges
+    //     n_edges -= static_cast<unsigned int>(k);
+    //     // Update advisor indices
+    //     for (Advisors<Index> as(c); as(); ++as)
+    //       as.advisor().i -= k;
+    //     // Update all change information
+    //     a_ch.lshift(k);
+    //   }
+    // }
+    // audit();
 
-    // Compress states
-    if (!a_ch.empty()) {
-      int f = a_ch.fst();
-      int l = a_ch.lst();
-      assert((f >= 0) && (l <= n));
-      Region r(home);
-      // State map for in-states
-      StateIdx* i_map = r.alloc<StateIdx>(max_states);
-      // State map for out-states
-      StateIdx* o_map = r.alloc<StateIdx>(max_states);
-      // Number of in-states
-      StateIdx i_n = 0;
-
-      n_states -= layers[l].n_states;
-      // Initialize map for in-states and compress
-      for (StateIdx j=0; j<layers[l].n_states; j++)
-        if ((layers[l].states[j].i_deg != 0) ||
-            (layers[l].states[j].o_deg != 0)) {
-          layers[l].states[i_n]=layers[l].states[j];
-          i_map[j]=i_n++;
-        }
-      layers[l].n_states = i_n;
-      n_states += layers[l].n_states;
-      assert(i_n > 0);
-
-      // Update in-states in edges for last layer, if any
-      if (l < n)
-        for (ValSize j=layers[l].size; j--; ) {
-          Support& s = layers[l].support[j];
-          for (Degree d=s.n_edges; d--; )
-            s.edges[d].i_state = i_map[s.edges[d].i_state];
-        }
-
-      // Update all changed layers
-      for (int i=l-1; i>=f; i--) {
-        // In-states become out-states
-        std::swap(o_map,i_map); i_n=0;
-        // Initialize map for in-states and compress
-        n_states -= layers[i].n_states;
-        for (StateIdx j=0; j<layers[i].n_states; j++)
-          if ((layers[i].states[j].o_deg != 0) ||
-              (layers[i].states[j].i_deg != 0)) {
-            layers[i].states[i_n]=layers[i].states[j];
-            i_map[j]=i_n++;
-          }
-        layers[i].n_states = i_n;
-        n_states += layers[i].n_states;
-        assert(i_n > 0);
-
-        // Update states in edges
-        for (ValSize j=layers[i].size; j--; ) {
-          Support& s = layers[i].support[j];
-          for (Degree d=s.n_edges; d--; ) {
-            s.edges[d].i_state = i_map[s.edges[d].i_state];
-            s.edges[d].o_state = o_map[s.edges[d].o_state];
-          }
-        }
-      }
-
-      // Update out-states in edges for previous layer, if any
-      if (f > 0)
-        for (ValSize j=layers[f-1].size; j--; ) {
-          Support& s = layers[f-1].support[j];
-          for (Degree d=s.n_edges; d--; )
-            s.edges[d].o_state = i_map[s.edges[d].o_state];
-        }
-
-      a_ch.reset();
-    }
-    audit();
+    // // Compress states
+    // if (!a_ch.empty()) {
+    //   int f = a_ch.fst();
+    //   int l = a_ch.lst();
+    //   assert((f >= 0) && (l <= n));
+    //   Region r(home);
+    //   // State map for in-states
+    //   StateIdx* i_map = r.alloc<StateIdx>(max_states);
+    //   // State map for out-states
+    //   StateIdx* o_map = r.alloc<StateIdx>(max_states);
+    //   // Number of in-states
+    //   StateIdx i_n = 0;
+    // 
+    //   n_states -= layers[l].n_states;
+    //   // Initialize map for in-states and compress
+    //   for (StateIdx j=0; j<layers[l].n_states; j++)
+    //     if ((layers[l].states[j].i_deg != 0) ||
+    //         (layers[l].states[j].o_deg != 0)) {
+    //       layers[l].states[i_n]=layers[l].states[j];
+    //       i_map[j]=i_n++;
+    //     }
+    //   layers[l].n_states = i_n;
+    //   n_states += layers[l].n_states;
+    //   assert(i_n > 0);
+    // 
+    //   // Update in-states in edges for last layer, if any
+    //   if (l < n)
+    //     for (ValSize j=layers[l].size; j--; ) {
+    //       Support& s = layers[l].support[j];
+    //       for (Degree d=s.n_edges; d--; )
+    //         s.edges[d].i_state = i_map[s.edges[d].i_state];
+    //     }
+    // 
+    //   // Update all changed layers
+    //   for (int i=l-1; i>=f; i--) {
+    //     // In-states become out-states
+    //     std::swap(o_map,i_map); i_n=0;
+    //     // Initialize map for in-states and compress
+    //     n_states -= layers[i].n_states;
+    //     for (StateIdx j=0; j<layers[i].n_states; j++)
+    //       if ((layers[i].states[j].o_deg != 0) ||
+    //           (layers[i].states[j].i_deg != 0)) {
+    //         layers[i].states[i_n]=layers[i].states[j];
+    //         i_map[j]=i_n++;
+    //       }
+    //     layers[i].n_states = i_n;
+    //     n_states += layers[i].n_states;
+    //     assert(i_n > 0);
+    // 
+    //     // Update states in edges
+    //     for (ValSize j=layers[i].size; j--; ) {
+    //       Support& s = layers[i].support[j];
+    //       for (Degree d=s.n_edges; d--; ) {
+    //         s.edges[d].i_state = i_map[s.edges[d].i_state];
+    //         s.edges[d].o_state = o_map[s.edges[d].o_state];
+    //       }
+    //     }
+    //   }
+    // 
+    //   // Update out-states in edges for previous layer, if any
+    //   if (f > 0)
+    //     for (ValSize j=layers[f-1].size; j--; ) {
+    //       Support& s = layers[f-1].support[j];
+    //       for (Degree d=s.n_edges; d--; )
+    //         s.edges[d].o_state = i_map[s.edges[d].o_state];
+    //     }
+    // 
+    //   a_ch.reset();
+    // }
+    // audit();
 
     return new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,share,*this);
   }
