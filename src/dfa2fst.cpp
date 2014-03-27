@@ -8,8 +8,8 @@ using namespace fst;
 
 int
 main(int argc, char* argv[]) {
-  REG lang1 = *(REG(IntArgs(3, 1,2,3))) + REG(1) + (REG(IntArgs(3, 1,2,3)))(3,3);
-  REG lang2 = *(REG(IntArgs(3, 1,2,3))) + REG(2) + (REG(IntArgs(3, 1,2,3)))(2,2);
+  REG lang1 = *(REG(IntArgs(3, 1,2,3))) + REG(1) + (REG(IntArgs(3, 1,2,3)))(6,6);
+  REG lang2 = *(REG(IntArgs(3, 1,2,3))) + REG(2) + (REG(IntArgs(3, 1,2,3)))(5,5);
   DFA dfa1(lang1);
   DFA dfa2(lang2);
   {
