@@ -375,7 +375,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       distance[i] = static_cast<int>(d[i].Value());
     
     // shortest accepted string gives a lower bound on length
-    if (length.gr(home, distance[0]) == Int::ME_INT_FAILED)
+    if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
         return ES_FAILED;
     
     // Allocate memory for layers
@@ -402,7 +402,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (extend(home) == ES_FAILED)
         return ES_FAILED;
       // Increase min length if there are no dfa-final states in last layer
-      if (length.gr(home, n + mindist) == Int::ME_INT_FAILED)
+      if (length.gq(home, n + mindist) == Int::ME_INT_FAILED)
           return ES_FAILED;
     }
     
