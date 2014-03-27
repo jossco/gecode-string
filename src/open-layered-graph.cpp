@@ -363,7 +363,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       fst.AddState();
     fst.SetStart(0);
     for (int i = dfa.final_fst(); i < dfa.final_lst(); i++) {
-      fst.SetFinal(i,1);
+      fst.SetFinal(i,0);
     }
     for (DFA::Transitions t(dfa); t(); ++t){
       fst.AddArc(t.i_state(), StdArc(t.symbol(), t.symbol(), 1.0, t.o_state()));

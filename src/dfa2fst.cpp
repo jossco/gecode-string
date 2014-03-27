@@ -20,7 +20,7 @@ main(int argc, char* argv[]) {
     fst1.AddState();
     fst1.SetStart(0);
     if (0 >= dfa1.final_fst() && 0 < dfa1.final_lst()){
-      fst1.SetFinal(0,1);
+      fst1.SetFinal(0,0);
       cout << " (final)";
     }
     cout << endl;
@@ -29,7 +29,7 @@ main(int argc, char* argv[]) {
       cout << "state " << i;
       fst1.AddState();
       if (i >= dfa1.final_fst() && i < dfa1.final_lst()) {
-        fst1.SetFinal(i,1);
+        fst1.SetFinal(i,0);
         cout << " (final)";
       }
       cout <<endl;
@@ -53,7 +53,7 @@ main(int argc, char* argv[]) {
     fst2.AddState();
     fst2.SetStart(0);
     if (0 >= dfa2.final_fst() && 0 < dfa2.final_lst()){
-      fst2.SetFinal(0,1);
+      fst2.SetFinal(0,0);
       cout << " (final)";
     }
     cout << endl;
@@ -62,7 +62,7 @@ main(int argc, char* argv[]) {
       cout << "state " << i;
       fst2.AddState();
       if (i >= dfa2.final_fst() && i < dfa2.final_lst()) {
-        fst2.SetFinal(i,1);
+        fst2.SetFinal(i,0);
         cout << " (final)";
       }
       cout <<endl;
