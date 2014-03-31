@@ -16,7 +16,10 @@ namespace Gecode {
 		if (x.same(home))
 			throw ArgumentSame("Int::extensional");
 		if (home.failed()) return;
-		GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa,length));
+    if (length.assigned() && x.size() == length.val())
+      GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+    else
+		  GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa,length));
 	}
 }
 
