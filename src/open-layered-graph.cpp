@@ -25,7 +25,7 @@ namespace Gecode {
 
 namespace Gecode { namespace Int { namespace Extensional {
   /*
-    TODO
+    TODO: eliminate OVarTraits
     OVarTraits is just a copy of Extensional::VarTraits from layered-graph.hpp.
     Unfortunately, VarTraits is NOT defined in extensional.hh, so it isn't visible
     from here (as long as we're building this outside of gecode, anyway.)
@@ -856,7 +856,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   Actor*
   OpenLayeredGraph<View,Val,Degree,StateIdx>::copy(Space& home, bool share) {
     /*
-      TODO
+      TODO: restore elimination of assigned prefixes
     
     Eliminating an assigned prefix is still a valid idea. 
     BUT it changes the relationship between the layers of the graph and the length var.
@@ -892,19 +892,6 @@ namespace Gecode { namespace Int { namespace Extensional {
     //   }
     // }
     // audit();
-
-    /*
-      TODO
-    
-    State compression here doesn't change the size of the memory allocation.
-    Compression is internal to each layer:
-      eliminate dead states from layer,
-      map remaining states to contiguous elements starting at 1
-      reduce layer[i].n_states to the new maximum.
-    Results in better iteration inside a single layer.
-    
-    Could restore this, but have to handle the last layer differently.
-    */
     
     // Compress states
     if (!a_ch.empty()) {
