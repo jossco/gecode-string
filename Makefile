@@ -20,10 +20,11 @@ ifneq (,$(findstring clang,$(CXX)))
 override LDLIBS += -stdlib=libstdc++
 endif
 
-LINK_TARGET = 	revenant
+LINK_TARGET = 	\
+	revenant \
+	proptest
 
-ALT_TARGETS = 	dfa2fst \
-				pentominoes
+ALT_TARGETS = 	dfa2fst
 
 MODULES = open-layered-graph.o
 

@@ -190,6 +190,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     : Advisor(home,share,a), i(a.i) {}
 
 
+
   /*
    * Index ranges
    *
@@ -260,8 +261,8 @@ namespace Gecode { namespace Int { namespace Extensional {
       max_states(static_cast<StateIdx>(dfa.n_states())),
       dfa(dfa),
       length(length) {
-    length.subscribe(home,*this,Int::PC_INT_BND);
     assert(length.max() > 0);
+    //home.notice(*this, AP_DISPOSE);
   }
 
   template<class View, class Val, class Degree, class StateIdx>
@@ -289,125 +290,75 @@ namespace Gecode { namespace Int { namespace Extensional {
   template<class View, class Val, class Degree, class StateIdx>
   forceinline ExecStatus
     OpenLayeredGraph<View,Val,Degree,StateIdx>::extend(Space& home) {
-      if (n < length.min()) {
-        Region r(home);
-        // Allocate temporary memory for edges
-        Edge* edges = r.alloc<Edge>(dfa.max_degree());
-        
+      assert(n < length.min());
+      Region r(home);
+      
+      // Allocate memory for all possible states in new layers
+      State* states = r.alloc<State>(max_states*(length.min()-n + 1));
+      for (int i=static_cast<int>(max_states)*(length.min()-n + 1); i--; )
+        states[i].init();
+      if(n==0)
+        layers[0].states = states;
+      for (int i=length.min(); i > n; i--) {
+        layers[i].states = states + (i-n)*max_states;
+      }
+
+      // Mark initial state as being reachable
+      if (n == 0)
+        i_state(0,0).i_deg = 1;
+      else {
         // undo outgoing edges of "final" states in previous last layer
-        if (n > 0) {
-          for (int s = 0; s < dfa.n_states(); s++)
-            if (s < dfa.final_fst() || s >= dfa.final_lst())
-              o_state(n-1, static_cast<StateIdx>(s)).o_deg = 0;
-        }
-        
-        // Forward pass: add transitions
-        for (int i=n; i<length.min(); i++) {
-          layers[i].support = home.alloc<Support>(layers[i].x.size());
-          ValSize j=0;
-          // Enter links leaving reachable states (indegree != 0)
-          for (ViewValues<View> nx(layers[i].x); nx(); ++nx) {
-            Degree n_edges=0;
-            for (DFA::Transitions t(dfa,nx.val()); t(); ++t)
-              if (i_state(i,static_cast<StateIdx>(t.i_state())).i_deg != 0) {
-                i_state(i,static_cast<StateIdx>(t.i_state())).o_deg++;
-                o_state(i,static_cast<StateIdx>(t.o_state())).i_deg++;
-                edges[n_edges].i_state = static_cast<StateIdx>(t.i_state());
-                edges[n_edges].o_state = static_cast<StateIdx>(t.o_state());
-                n_edges++;
-              }
-            assert(n_edges <= dfa.max_degree());
-            // Found support for value
-            if (n_edges > 0) {
-              Support& s = layers[i].support[j];
-              s.val = static_cast<Val>(nx.val());
-              s.n_edges = n_edges;
-              s.edges = Heap::copy(home.alloc<Edge>(n_edges),edges,n_edges);
-              j++;
-            }
-          }
-          if ((layers[i].size = j) == 0)
-            return ES_FAILED;
-        }
-        n = length.min();
-      }
-      // Mark states that are "close enough" to a final state
-      mindist = length.max() + 1;
-      for (int s=0; s < dfa.n_states(); s++) {
-        if (s < dfa.final_fst() || s >= dfa.final_lst())
-          if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-              && distance[s] + n < length.max()) {
-              o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-              if (mindist > distance[s])
-                mindist = distance[s];
-            }
-        }
-    
-      // Mark final states as reachable
-      for (int s=dfa.final_fst(); s<dfa.final_lst(); s++){
-        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0) {
-          o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-          mindist = 0;
+        assert(layers[n].n_states = dfa.n_states());
+        for (StateIdx j=0; j < layers[n].n_states; j++){
+          layers[n].states[j].o_deg = 0;
         }
       }
-      return ES_OK;
-    }
+      // Allocate temporary memory for edges
+      Edge* edges = r.alloc<Edge>(dfa.max_degree());
   
-  template<class View, class Val, class Degree, class StateIdx>
-  template<class Var>
-  forceinline ExecStatus
-  OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home,
-                                                     const VarArgArray<Var>& x) {
-    Region r(home);
-    // distance[i] = shortest path from state i to a final state
-    StdVectorFst fst;
-    for (int i = 0; i < dfa.n_states(); i++)
-      fst.AddState();
-    fst.SetStart(0);
-    for (int i = dfa.final_fst(); i < dfa.final_lst(); i++) {
-      fst.SetFinal(i,0);
-    }
-    for (DFA::Transitions t(dfa); t(); ++t){
-      fst.AddArc(t.i_state(), StdArc(t.symbol(), t.symbol(), 1.0, t.o_state()));
-    }
-    vector<TropicalWeight> d (dfa.n_states());
-    ShortestDistance(fst, &d, true);
-    distance = home.alloc<int>(dfa.n_states());
-    for (int i = 0; i < dfa.n_states(); i++)
-      distance[i] = static_cast<int>(d[i].Value());
-    
-    // shortest accepted string gives a lower bound on length
-    if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
-        return ES_FAILED;
-    
-    // Allocate memory for layers
-    // Allocate enough for length.max() up front,
-    // even though only length.min()+1 layers used now.
-    layers = home.alloc<Layer>(length.max()+1);
-
-    // Allocate memory for all possible states
-    State* states = r.alloc<State>(max_states*(length.max()+1));
-    for (int i=static_cast<int>(max_states)*(length.max()+1); i--; )
-      states[i].init();
-    for (int i=length.max(); i--; ) {
-      layers[i].states = states + i*max_states;
-      layers[i].x = x[i];
-    }
-
-    // Mark initial state as being reachable
-    i_state(0,0).i_deg = 1;
-    
-    while (n < length.min()){
-      // Add new layers
-      if (extend(home) == ES_FAILED)
-        return ES_FAILED;
-      // Increase min length if there are no dfa-final states in last layer
-      if (length.gq(home, n + mindist) == Int::ME_INT_FAILED)
+      // Forward pass: add transitions
+      for (int i=n; i<length.min(); i++) {
+        layers[i].support = home.alloc<Support>(layers[i].x.size());
+        ValSize j=0;
+        // Enter links leaving reachable states (indegree != 0)
+        for (ViewValues<View> nx(layers[i].x); nx(); ++nx) {
+          Degree n_edges=0;
+          for (DFA::Transitions t(dfa,nx.val()); t(); ++t)
+            if (i_state(i,static_cast<StateIdx>(t.i_state())).i_deg != 0) {
+              i_state(i,static_cast<StateIdx>(t.i_state())).o_deg++;
+              o_state(i,static_cast<StateIdx>(t.o_state())).i_deg++;
+              edges[n_edges].i_state = static_cast<StateIdx>(t.i_state());
+              edges[n_edges].o_state = static_cast<StateIdx>(t.o_state());
+              n_edges++;
+            }
+          assert(n_edges <= dfa.max_degree());
+          // Found support for value
+          if (n_edges > 0) {
+            Support& s = layers[i].support[j];
+            s.val = static_cast<Val>(nx.val());
+            s.n_edges = n_edges;
+            s.edges = Heap::copy(home.alloc<Edge>(n_edges),edges,n_edges);
+            j++;
+          }
+        }
+        if ((layers[i].size = j) == 0)
           return ES_FAILED;
-    }
-    
+      }
+      
+    // Mark states that are "close enough" to a dfa-final state
+    mindist = length.max() + 1;
+    for (int s=0; s < dfa.n_states(); s++) {
+      if (o_state(length.min()-1,static_cast<StateIdx>(s)).i_deg != 0
+          && distance[s] + length.min() <= length.max()) {
+          o_state(length.min()-1,static_cast<StateIdx>(s)).o_deg = 1;
+          mindist = std::min(mindist,distance[s]);
+        }
+        else
+          o_state(length.min()-1,static_cast<StateIdx>(s)).o_deg = 0;
+      }
+      
     // Backward pass: prune all transitions that do not lead to final state
-    for (int i=n; i--; ) {
+    for (int i=length.min(); i--; ) {
       ValSize k=0;
       for (ValSize j=0; j<layers[i].size; j++) {
         Support& s = layers[i].support[j];
@@ -442,18 +393,17 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Initialize map for in-states
       // Need layer n to map to the dfa, so no compression.
       for (StateIdx j=max_states; j--; )
-        i_map[j]=i_n++;
-      
-      layers[n].n_states = i_n;
+        i_map[j]=j;
+      layers[length.min()].n_states = max_states;
       
       // Total number of states
-      n_states = i_n;
+      n_states = max_states;
       // Total number of edges
       n_edges = 0;
       // New maximal number of states
       StateIdx max_s = i_n;
 
-      for (int i=n; i--; ) {
+      for (int i=length.min(); i--; ) {
         // In-states become out-states
         std::swap(o_map,i_map); i_n=0;
         // Initialize map for in-states
@@ -475,20 +425,26 @@ namespace Gecode { namespace Int { namespace Extensional {
           }
         }
       }
+      // Update out-states in edges for previous layer, if any
+      if (n > 0)
+        for (ValSize j=layers[n-1].size; j--; ) {
+          Support& s = layers[n-1].support[j];
+          for (Degree d=s.n_edges; d--; )
+            s.edges[d].o_state = i_map[s.edges[d].o_state];
+        }
 
       // Allocate and copy states
-      // Have an accurate count of states in all allocated layers,
-      // but only the max possible number for all unallocated layers.
-      State* a_states = home.alloc<State>(n_states + (length.max() - n) * max_states);
-      StateIdx k = 0;
-      for (StateIdx j=max_states; j--; ){
-        a_states[k++] = layers[n].states[j];
-      }
-      assert(k == layers[n].n_states);
-      layers[n].states = a_states;
-      a_states += layers[n].n_states;
-      for (int i=n; i--; ) {
-        k=0;
+      State* a_states = home.alloc<State>(n_states);
+      
+      // last layer is not compressed or reversed
+      for (StateIdx j=max_states; j--; )
+        a_states[j] = layers[length.min()].states[j];
+      assert(layers[length.min()].n_states == max_states);
+      layers[length.min()].states = a_states;
+      a_states += layers[length.min()].n_states;
+      // all other layers
+      for (int i=length.min()-1; i >= n; i--) {
+        StateIdx k=0;
         for (StateIdx j=max_states; j--; )
           if ((layers[i].states[j].o_deg != 0) ||
               (layers[i].states[j].i_deg != 0))
@@ -498,23 +454,64 @@ namespace Gecode { namespace Int { namespace Extensional {
         a_states += layers[i].n_states;
       }
       
-      // Update maximal number of states
-      // max_states = max_s;
     }
     
-    // Schedule if subsumption is needed
-    if (length.assigned()){
-      if (c.empty())
-        View::schedule(home,*this,ME_INT_VAL);
-      else {
-        VarArgArray<Var> _x;
-        for (int i = 0; i < length.val(); i++){
-          _x << layers[i].x;
-        }
-        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,dfa));
-      }
+    n = length.min();
+    return ES_OK;
+  }
+  
+  template<class View, class Val, class Degree, class StateIdx>
+  template<class Var>
+  forceinline ExecStatus
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::initialize(Space& home, const VarArgArray<Var>& x) {
+                                          
+    
+    // distance[i] = shortest path from state i to a final state
+    StdVectorFst fst;
+    for (int i = 0; i < dfa.n_states(); i++)
+      fst.AddState();
+    fst.SetStart(0);
+    for (int i = dfa.final_fst(); i < dfa.final_lst(); i++) {
+      fst.SetFinal(i,0);
+    }
+    for (DFA::Transitions t(dfa); t(); ++t){
+      fst.AddArc(t.i_state(), StdArc(t.symbol(), t.symbol(), 1.0, t.o_state()));
+    }
+    vector<TropicalWeight> d (dfa.n_states());
+    ShortestDistance(fst, &d, true);
+    distance = home.alloc<int>(dfa.n_states());
+    for (int i = 0; i < dfa.n_states(); i++)
+      distance[i] = static_cast<int>(d[i].Value());
+    
+    // shortest accepted string gives a lower bound on length
+    if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
+        return ES_FAILED;
+    if (!length.assigned())
+      length.subscribe(home, *new (home) Index(home,*this,c,-1));
+    
+    // Allocate memory for layers
+    // Allocate enough for length.max() up front,
+    // even though only length.min()+1 layers used now.
+    layers = home.alloc<Layer>(length.max()+1);
+    for (int i = 0; i < length.max(); i++)
+      layers[i].x = x[i];
+
+    while (n < length.min()){
+      // Add new layers
+      if (extend(home) == ES_FAILED)
+        return ES_FAILED;
+      // Increase min length if there are no dfa-final states in last layer
+      if (length.gq(home, n + mindist) == Int::ME_INT_FAILED)
+          return ES_FAILED;
     }
 
+    // Update maximal number of states
+    // max_states = max_s;
+    
+    // Schedule if subsumption is needed
+    if (length.assigned() || c.empty())
+        View::schedule(home,*this,ME_INT_VAL);
+    
     audit();
     return ES_OK;
   }
@@ -524,7 +521,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   OpenLayeredGraph<View,Val,Degree,StateIdx>::advise(Space& home,
                                                  Advisor& _a, const Delta& d) {
     // Check whether state information has already been created
-    if (layers[0].states == NULL) {
+                                                   if (layers[0].states == NULL) {
       State* states = home.alloc<State>(n_states);
       for (unsigned int i=n_states; i--; )
         states[i].init();
@@ -543,132 +540,175 @@ namespace Gecode { namespace Int { namespace Extensional {
       }
     }
     
+    int lmin = length.min();
+    int lmax = length.max();
+    bool lassign = length.assigned();
+    bool any = length.any(d);
+    int dmin, dmax;
+    if (any) {
+      dmin = length.min(d); dmax = length.max(d);
+    }
+    
     Index& a = static_cast<Index&>(_a);
     const int i = a.i;
 
-    if (layers[i].size <= layers[i].x.size()) {
-      // Propagator has already done everything
+    if (i == -1) {
+      // advisor is for length, not for a layer
       if (View::modevent(d) == ME_INT_VAL) {
-        a.dispose(home,c);
-        return c.empty() ? ES_NOFIX : ES_FIX;
-      } else {
-        return ES_FIX;
+        // schedule for rewriting or subsumption:
+        return home.ES_NOFIX_DISPOSE(c,a);
       }
-    }
-
-    bool i_mod = false;
-    bool o_mod = false;
-
-    if (View::modevent(d) == ME_INT_VAL) {
-      Val n = static_cast<Val>(layers[i].x.val());
-      ValSize j=0;
-      for (; layers[i].support[j].val < n; j++) {
-        Support& s = layers[i].support[j];
-        n_edges -= s.n_edges;
-        // Supported value not any longer in view
-        for (Degree d=s.n_edges; d--; ) {
-          // Adapt states
-          o_mod |= i_dec(i,s.edges[d]);
-          i_mod |= o_dec(i,s.edges[d]);
+      if (length.min() > n) {
+          return ES_NOFIX;
+      } 
+      else {
+        mindist = length.max() + 1;
+        bool fix = true;
+        for (int s=0; s < dfa.n_states(); s++) {
+          if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
+              && distance[s] + n <= length.max()) {
+                o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+                mindist = std::min(mindist,distance[s]);
+          } else
+            if (o_state(n-1,static_cast<StateIdx>(s)).o_deg == 1) {
+              fix = false;
+            }
+            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
+        }
+        if(n + mindist > length.max())
+          return ES_FAILED;
+        else
+          return fix ? ES_FIX : ES_NOFIX;
+      }
+    } else {
+      if (layers[i].size <= layers[i].x.size()) {
+        // Propagator has already done everything
+        if (View::modevent(d) == ME_INT_VAL) {
+          a.dispose(home,c);
+          return c.empty() ? ES_NOFIX : ES_FIX;
+        } else {
+          return ES_FIX;
         }
       }
-      assert(layers[i].support[j].val == n);
-      layers[i].support[0] = layers[i].support[j++];
-      ValSize s=layers[i].size;
-      layers[i].size = 1;
-      for (; j<s; j++) {
-        Support& s = layers[i].support[j];
-        n_edges -= s.n_edges;
-        for (Degree d=s.n_edges; d--; ) {
-          // Adapt states
-          o_mod |= i_dec(i,s.edges[d]);
-          i_mod |= o_dec(i,s.edges[d]);
-        }
-      }
-    } else if (layers[i].x.any(d)) {
-      ValSize j=0;
-      ValSize k=0;
-      ValSize s=layers[i].size;
-      for (ViewRanges<View> rx(layers[i].x); rx() && (j<s);) {
-        Support& s = layers[i].support[j];
-        if (s.val < static_cast<Val>(rx.min())) {
+
+      bool i_mod = false;
+      bool o_mod = false;
+
+      if (View::modevent(d) == ME_INT_VAL) {
+        Val n = static_cast<Val>(layers[i].x.val());
+        ValSize j=0;
+        for (; layers[i].support[j].val < n; j++) {
+          Support& s = layers[i].support[j];
+          n_edges -= s.n_edges;
           // Supported value not any longer in view
+          for (Degree d=s.n_edges; d--; ) {
+            // Adapt states
+            o_mod |= i_dec(i,s.edges[d]);
+            i_mod |= o_dec(i,s.edges[d]);
+          }
+        }
+        assert(layers[i].support[j].val == n);
+        layers[i].support[0] = layers[i].support[j++];
+        ValSize s=layers[i].size;
+        layers[i].size = 1;
+        for (; j<s; j++) {
+          Support& s = layers[i].support[j];
           n_edges -= s.n_edges;
           for (Degree d=s.n_edges; d--; ) {
             // Adapt states
             o_mod |= i_dec(i,s.edges[d]);
             i_mod |= o_dec(i,s.edges[d]);
           }
-          ++j;
-        } else if (s.val > static_cast<Val>(rx.max())) {
-          ++rx;
-        } else {
-          layers[i].support[k++]=s;
-          ++j;
         }
-      }
-      assert(k > 0);
-      layers[i].size = k;
-      // Remove remaining values
-      for (; j<s; j++) {
-        Support& s=layers[i].support[j];
-        n_edges -= s.n_edges;
-        for (Degree d=s.n_edges; d--; ) {
-          // Adapt states
-          o_mod |= i_dec(i,s.edges[d]);
-          i_mod |= o_dec(i,s.edges[d]);
+      } else if (layers[i].x.any(d)) {
+        ValSize j=0;
+        ValSize k=0;
+        ValSize s=layers[i].size;
+        for (ViewRanges<View> rx(layers[i].x); rx() && (j<s);) {
+          Support& s = layers[i].support[j];
+          if (s.val < static_cast<Val>(rx.min())) {
+            // Supported value not any longer in view
+            n_edges -= s.n_edges;
+            for (Degree d=s.n_edges; d--; ) {
+              // Adapt states
+              o_mod |= i_dec(i,s.edges[d]);
+              i_mod |= o_dec(i,s.edges[d]);
+            }
+            ++j;
+          } else if (s.val > static_cast<Val>(rx.max())) {
+            ++rx;
+          } else {
+            layers[i].support[k++]=s;
+            ++j;
+          }
         }
-      }
-    } else {
-      Val min = static_cast<Val>(layers[i].x.min(d));
-      ValSize j=0;
-      // Skip values smaller than min (to keep)
-      for (; layers[i].support[j].val < min; j++) {}
-      Val max = static_cast<Val>(layers[i].x.max(d));
-      ValSize k=j;
-      ValSize s=layers[i].size;
-      // Remove pruned values
-      for (; (j<s) && (layers[i].support[j].val <= max); j++) {
-        Support& s=layers[i].support[j];
-        n_edges -= s.n_edges;
-        for (Degree d=s.n_edges; d--; ) {
-          // Adapt states
-          o_mod |= i_dec(i,s.edges[d]);
-          i_mod |= o_dec(i,s.edges[d]);
+        assert(k > 0);
+        layers[i].size = k;
+        // Remove remaining values
+        for (; j<s; j++) {
+          Support& s=layers[i].support[j];
+          n_edges -= s.n_edges;
+          for (Degree d=s.n_edges; d--; ) {
+            // Adapt states
+            o_mod |= i_dec(i,s.edges[d]);
+            i_mod |= o_dec(i,s.edges[d]);
+          }
         }
+      } else {
+        Val min = static_cast<Val>(layers[i].x.min(d));
+        ValSize j=0;
+        // Skip values smaller than min (to keep)
+        for (; layers[i].support[j].val < min; j++) {}
+        Val max = static_cast<Val>(layers[i].x.max(d));
+        ValSize k=j;
+        ValSize s=layers[i].size;
+        // Remove pruned values
+        for (; (j<s) && (layers[i].support[j].val <= max); j++) {
+          Support& s=layers[i].support[j];
+          n_edges -= s.n_edges;
+          for (Degree d=s.n_edges; d--; ) {
+            // Adapt states
+            o_mod |= i_dec(i,s.edges[d]);
+            i_mod |= o_dec(i,s.edges[d]);
+          }
+        }
+        // Keep remaining values
+        while (j<s)
+          layers[i].support[k++]=layers[i].support[j++];
+        layers[i].size =k;
+        assert(k > 0);
       }
-      // Keep remaining values
-      while (j<s)
-        layers[i].support[k++]=layers[i].support[j++];
-      layers[i].size =k;
-      assert(k > 0);
-    }
 
-    audit();
+      audit();
 
-    bool fix = true;
-    if (o_mod && (i > 0)) {
-      o_ch.add(i-1); fix = false;
-     }
-    if (i_mod && (i+1 < n)) {
-      i_ch.add(i+1); fix = false;
-    }
-    if (fix) {
-      if (View::modevent(d) == ME_INT_VAL) {
-        a.dispose(home,c);
-        return c.empty() ? ES_NOFIX : ES_FIX;
+      bool fix = true;
+      if (o_mod && (i > 0)) {
+        o_ch.add(i-1); fix = false;
+       }
+      if (i_mod && (i+1 < n)) {
+        i_ch.add(i+1); fix = false;
       }
-      return ES_FIX;
-    } else {
-      return (View::modevent(d) == ME_INT_VAL)
-        ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
+      if (fix) {
+        if (View::modevent(d) == ME_INT_VAL) {
+          a.dispose(home,c);
+          return c.empty() ? ES_NOFIX : ES_FIX;
+        }
+        return ES_FIX;
+      } else {
+        return (View::modevent(d) == ME_INT_VAL)
+          ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
+      }
     }
   }
+
 
   template<class View, class Val, class Degree, class StateIdx>
   forceinline size_t
   OpenLayeredGraph<View,Val,Degree,StateIdx>::dispose(Space& home) {
-    length.cancel(home, *this, Int::PC_INT_BND);
+    for (Advisors<Index> a(c); a(); ++a) {
+      Index i = static_cast<Index>(a.advisor());
+      layers[i.i].x.cancel(home,a.advisor());
+    }
     c.dispose(home);
     (void) Propagator::dispose(home);
     return sizeof(*this);
@@ -676,8 +716,8 @@ namespace Gecode { namespace Int { namespace Extensional {
 
   template<class View, class Val, class Degree, class StateIdx>
   ExecStatus
-  OpenLayeredGraph<View,Val,Degree,StateIdx>::propagate(Space& home,
-                                                    const ModEventDelta&) {
+  OpenLayeredGraph<View,Val,Degree,StateIdx>::propagate(Space& home, const ModEventDelta&) {
+    
     // Forward pass
     for (int i=i_ch.fst(); i<=i_ch.lst(); i++) {
       bool i_mod = false;
@@ -714,11 +754,11 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     
     // Extend layered graph if min length has increased
-    int advisor_lst = n;
-    if (n < length.min())
+    if (n < length.min()){
       o_ch.add(length.min()-1);
-    if (extend(home) == ES_FAILED)
-      return ES_FAILED;
+      if (extend(home) == ES_FAILED)
+        return ES_FAILED;
+    }
     
     // Backward pass
     for (int i=o_ch.lst(); i>=o_ch.fst(); i--) {
@@ -752,30 +792,23 @@ namespace Gecode { namespace Int { namespace Extensional {
         o_ch.add(i-1);
     }
     
-    // Subscribe to newly created layers
-    for (int i = advisor_lst; i < n; i++)
-      if (!layers[i].x.assigned())
-        layers[i].x.subscribe(home, *new (home) Index(home,*this,c,i));
-    
     a_ch.add(i_ch); i_ch.reset();
     a_ch.add(o_ch); o_ch.reset();
 
     audit();
 
     // Check subsumption
-    if (length.assigned()){
-      if (c.empty())
-        return home.ES_SUBSUMED(*this);
-      else {
+    if (c.empty())
+      return home.ES_SUBSUMED(*this);
+    if (length.assigned()) {
         VarArgArray<typename ViewTraits<View>::Var> _x;
         for (int i = 0; i < length.val(); i++){
           _x << layers[i].x;
         }
-        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,dfa));
+        DFA d(dfa);
+        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
       }
-    }
-    else
-      return ES_FIX;
+    return ES_FIX;
   }
 
 
@@ -792,7 +825,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         return ES_OK;
       return ES_FAILED;
     }
+    else
+      GECODE_ME_CHECK(length.le(home,x.size()));
     assert(length.min() > 0);
+    /*
+      TODO: don't constrain values over length.min
+    Only values before to x[length.min] should be constrained to 
+    the set of symbols in the DFA (other values might not be in the sequence).
+    Should really do this in extend().
+    */
     for (int i=x.size(); i--; ) {
       DFA::Symbols s(dfa);
       typename OVarTraits<Var>::View xi(x[i]);
@@ -811,10 +852,13 @@ namespace Gecode { namespace Int { namespace Extensional {
     : Propagator(home,share,p), 
       n(p.n), layers(home.alloc<Layer>(p.length.max()+1)),
       max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges),
-      mindist(p.mindist), distance(p.distance),
-      dfa(p.dfa) {
+      mindist(p.mindist), distance(home.alloc<int>(p.dfa.n_states())) {
     c.update(home,share,p.c);
     length.update(home,share,p.length);
+    dfa.update(home,share,p.dfa);
+    for (int i = dfa.n_states(); i--; )
+      distance[i] = p.distance[i];
+    
     // Do not allocate states, postpone to advise!
     layers[n].n_states = p.layers[n].n_states;
     layers[n].states = NULL;
@@ -825,7 +869,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       layers[i].x.update(home,share,p.layers[i].x);
     }
     for (int i=n; i--; ) {
-      layers[i].x.update(home,share,p.layers[i].x);
+      //layers[i].x.update(home,share,p.layers[i].x);
       assert(layers[i].x.size() == p.layers[i].size);
       layers[i].size = p.layers[i].size;
       assert(layers[i].size == p.layers[i].size);
