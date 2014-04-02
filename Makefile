@@ -21,12 +21,12 @@ override LDLIBS += -stdlib=libstdc++
 endif
 
 LINK_TARGET = 	\
-	revenant \
-	proptest
+	revenant
 
 ALT_TARGETS = 	dfa2fst
 
-MODULES = open-layered-graph.o
+MODULES = \
+	open-layered-graph.o
 
 OBJS = $(patsubst %,%.o,$(LINK_TARGET)) $(patsubst %,%.o,$(ALT_TARGETS))
 
