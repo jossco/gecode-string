@@ -16,6 +16,9 @@ namespace Gecode {
 	* Throws an exception of type Int::ArgumentSame, if \a x contains
 	* the same unassigned variable multiply. If shared occurences of variables
 	* are required, unshare should be used.
+  * 
+  * Throws an exception of type Int:TooFewArguments, if \a x contains
+  * fewer variables than the least value of \a n.
 	*/
 	GECODE_INT_EXPORT void
 		extensional(Home home, const IntVarArgs& x, DFA d, const IntVar n);
@@ -136,7 +139,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// The bounded length
      Int::IntView length;
      /// The distance from node i to any final state in the dfa
-     int *distance;
+     IntSharedArray distance;
      /// min distance from last layer in lgp, to any dfa-final state
      int mindist;
      /// The layers of the graph

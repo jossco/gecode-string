@@ -16,8 +16,20 @@ namespace Gecode {
 		if (x.same(home))
 			throw ArgumentSame("Int::extensional");
 		if (home.failed()) return;
-    if (length.assigned() && x.size() == length.val())
-      GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+    if (length.min() > x.size()) {
+      throw TooFewArguments("Int::extensional");
+    }
+    if (length.assigned()) {
+      if (x.size() == length.val())
+        GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+      else {
+        IntVarArgs _x;
+        for (int i = 0; i < length.val(); i++){
+          _x << x[i];
+        }
+        GECODE_ES_FAIL(Extensional::post_lgp(home,_x,dfa));
+      }
+    }
     else
 		  GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa,length));
 	}
@@ -316,8 +328,12 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Allocate temporary memory for edges
       Edge* edges = r.alloc<Edge>(dfa.max_degree());
   
+      DFA::Symbols sym(dfa);
+      
       // Forward pass: add transitions
       for (int i=n; i<length.min(); i++) {
+        GECODE_ME_CHECK(layers[i].x.inter_v(home,sym,false));
+        
         layers[i].support = home.alloc<Support>(layers[i].x.size());
         ValSize j=0;
         // Enter links leaving reachable states (indegree != 0)
@@ -479,9 +495,10 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     vector<TropicalWeight> d (dfa.n_states());
     ShortestDistance(fst, &d, true);
-    distance = home.alloc<int>(dfa.n_states());
+    IntArgs dist(dfa.n_states());
     for (int i = 0; i < dfa.n_states(); i++)
-      distance[i] = static_cast<int>(d[i].Value());
+      dist[i] = static_cast<int>(d[i].Value());
+    distance = dist;
     
     // shortest accepted string gives a lower bound on length
     if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
@@ -825,20 +842,9 @@ namespace Gecode { namespace Int { namespace Extensional {
         return ES_OK;
       return ES_FAILED;
     }
-    else
-      GECODE_ME_CHECK(length.le(home,x.size()));
-    assert(length.min() > 0);
-    /*
-      TODO: don't constrain values over length.min
-    Only values before to x[length.min] should be constrained to 
-    the set of symbols in the DFA (other values might not be in the sequence).
-    Should really do this in extend().
-    */
-    for (int i=x.size(); i--; ) {
-      DFA::Symbols s(dfa);
-      typename OVarTraits<Var>::View xi(x[i]);
-      GECODE_ME_CHECK(xi.inter_v(home,s,false));
-    }
+    GECODE_ME_CHECK(length.lq(home,x.size()));
+    GECODE_ME_CHECK(length.gq(home,0));
+    
     OpenLayeredGraph<View,Val,Degree,StateIdx>* p =
       new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa,length);
     return p->initialize(home,x);
@@ -852,12 +858,11 @@ namespace Gecode { namespace Int { namespace Extensional {
     : Propagator(home,share,p), 
       n(p.n), layers(home.alloc<Layer>(p.length.max()+1)),
       max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges),
-      mindist(p.mindist), distance(home.alloc<int>(p.dfa.n_states())) {
+      mindist(p.mindist) {
     c.update(home,share,p.c);
     length.update(home,share,p.length);
     dfa.update(home,share,p.dfa);
-    for (int i = dfa.n_states(); i--; )
-      distance[i] = p.distance[i];
+    distance.update(home, share, p.distance);
     
     // Do not allocate states, postpone to advise!
     layers[n].n_states = p.layers[n].n_states;
