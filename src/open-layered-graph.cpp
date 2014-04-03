@@ -328,8 +328,12 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Allocate temporary memory for edges
       Edge* edges = r.alloc<Edge>(dfa.max_degree());
   
+      DFA::Symbols sym(dfa);
+      
       // Forward pass: add transitions
       for (int i=n; i<length.min(); i++) {
+        GECODE_ME_CHECK(layers[i].x.inter_v(home,sym,false));
+        
         layers[i].support = home.alloc<Support>(layers[i].x.size());
         ValSize j=0;
         // Enter links leaving reachable states (indegree != 0)
@@ -840,17 +844,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     GECODE_ME_CHECK(length.lq(home,x.size()));
     GECODE_ME_CHECK(length.gq(home,0));
-    /*
-      TODO: don't constrain values over length.min
-    Only values before to x[length.min] should be constrained to 
-    the set of symbols in the DFA (other values might not be in the sequence).
-    Should really do this in extend().
-    */
-    for (int i=x.size(); i--; ) {
-      DFA::Symbols s(dfa);
-      typename OVarTraits<Var>::View xi(x[i]);
-      GECODE_ME_CHECK(xi.inter_v(home,s,false));
-    }
+    
     OpenLayeredGraph<View,Val,Degree,StateIdx>* p =
       new (home) OpenLayeredGraph<View,Val,Degree,StateIdx>(home,x,dfa,length);
     return p->initialize(home,x);
