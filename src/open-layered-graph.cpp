@@ -826,7 +826,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       return ES_FAILED;
     }
     else
-      GECODE_ME_CHECK(length.le(home,x.size()));
+      GECODE_ME_CHECK(length.lq(home,x.size()));
     assert(length.min() > 0);
     /*
       TODO: don't constrain values over length.min
