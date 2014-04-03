@@ -491,9 +491,10 @@ namespace Gecode { namespace Int { namespace Extensional {
     }
     vector<TropicalWeight> d (dfa.n_states());
     ShortestDistance(fst, &d, true);
-    distance = home.alloc<int>(dfa.n_states());
+    IntArgs dist(dfa.n_states());
     for (int i = 0; i < dfa.n_states(); i++)
-      distance[i] = static_cast<int>(d[i].Value());
+      dist[i] = static_cast<int>(d[i].Value());
+    distance = dist;
     
     // shortest accepted string gives a lower bound on length
     if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
@@ -863,12 +864,11 @@ namespace Gecode { namespace Int { namespace Extensional {
     : Propagator(home,share,p), 
       n(p.n), layers(home.alloc<Layer>(p.length.max()+1)),
       max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges),
-      mindist(p.mindist), distance(home.alloc<int>(p.dfa.n_states())) {
+      mindist(p.mindist) {
     c.update(home,share,p.c);
     length.update(home,share,p.length);
     dfa.update(home,share,p.dfa);
-    for (int i = dfa.n_states(); i--; )
-      distance[i] = p.distance[i];
+    distance.update(home, share, p.distance);
     
     // Do not allocate states, postpone to advise!
     layers[n].n_states = p.layers[n].n_states;

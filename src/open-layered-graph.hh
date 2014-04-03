@@ -139,7 +139,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// The bounded length
      Int::IntView length;
      /// The distance from node i to any final state in the dfa
-     int *distance;
+     IntSharedArray distance;
      /// min distance from last layer in lgp, to any dfa-final state
      int mindist;
      /// The layers of the graph

@@ -15,7 +15,7 @@ private:
 public:
   enum {BRANCH_ALL_VALS, BRANCH_LEN_FILTERED, SEARCH_STATUS, SEARCH_DFS, MODEL_OPEN, MODEL_PADDED, MODEL_FIXED};
   Revenant(const SizeOptions& opt) : 
-    A(*this, wordlength, (opt.model()==MODEL_PADDED)?0:1, 3),
+    A(*this, wordlength, 0, 3),
     N(*this, 1, wordlength) {
       REG lang1, lang2;
       if (opt.model() != MODEL_PADDED) {
