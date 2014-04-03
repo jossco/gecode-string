@@ -16,8 +16,20 @@ namespace Gecode {
 		if (x.same(home))
 			throw ArgumentSame("Int::extensional");
 		if (home.failed()) return;
-    if (length.assigned() && x.size() == length.val())
-      GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+    if (length.min() > x.size()) {
+      throw TooFewArguments("Int::extensional");
+    }
+    if (length.assigned()) {
+      if (x.size() == length.val())
+        GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa));
+      else {
+        IntVarArgs _x;
+        for (int i = 0; i < length.val(); i++){
+          _x << x[i];
+        }
+        GECODE_ES_FAIL(Extensional::post_lgp(home,_x,dfa));
+      }
+    }
     else
 		  GECODE_ES_FAIL(Extensional::post_lgp(home,x,dfa,length));
 	}
@@ -825,9 +837,8 @@ namespace Gecode { namespace Int { namespace Extensional {
         return ES_OK;
       return ES_FAILED;
     }
-    else
-      GECODE_ME_CHECK(length.lq(home,x.size()));
-    assert(length.min() > 0);
+    GECODE_ME_CHECK(length.lq(home,x.size()));
+    GECODE_ME_CHECK(length.gq(home,0));
     /*
       TODO: don't constrain values over length.min
     Only values before to x[length.min] should be constrained to 

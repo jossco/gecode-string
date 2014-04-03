@@ -16,6 +16,9 @@ namespace Gecode {
 	* Throws an exception of type Int::ArgumentSame, if \a x contains
 	* the same unassigned variable multiply. If shared occurences of variables
 	* are required, unshare should be used.
+  * 
+  * Throws an exception of type Int:TooFewArguments, if \a x contains
+  * fewer variables than the least value of \a n.
 	*/
 	GECODE_INT_EXPORT void
 		extensional(Home home, const IntVarArgs& x, DFA d, const IntVar n);
