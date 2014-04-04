@@ -112,7 +112,7 @@ public:
     }
   }
 };
-void boundednone(Home home, const IntVarArgs& x, const IntVar length) {
+void boundednone(Home home, const IntVarArgs& x, IntVar length) {
   if (home.failed()) return;
   ViewArray<Int::IntView> y(home,x);
   Int::IntView l(length);
@@ -190,14 +190,16 @@ public:
       for (int i = 0; i < wordlength; i++)
         os << A[i];
     } else {
+      os << N << " : [ ";
       for (int i = 0; i < N.min(); i++)
         os << A[i];
       if (!N.assigned()) {
         os << "{";
-        for (int i = N.min(); i < N.max(); i++)
+        for (int i = N.min(); i < std::min(A.size(),N.max()); i++)
           os << A[i];
         os << "}";
       }
+      os << " ]";
     } 
     os << std::endl;
   }
