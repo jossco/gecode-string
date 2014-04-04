@@ -776,6 +776,14 @@ namespace Gecode { namespace Int { namespace Extensional {
       if (extend(home) == ES_FAILED)
         return ES_FAILED;
     }
+    if (length.assigned()) {
+        VarArgArray<typename ViewTraits<View>::Var> _x;
+        for (int i = 0; i < length.val(); i++){
+          _x << layers[i].x;
+        }
+        DFA d(dfa);
+        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
+      }
     
     // Backward pass
     for (int i=o_ch.lst(); i>=o_ch.fst(); i--) {
@@ -817,14 +825,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     // Check subsumption
     if (c.empty())
       return home.ES_SUBSUMED(*this);
-    // if (length.assigned()) {
-    //     VarArgArray<typename ViewTraits<View>::Var> _x;
-    //     for (int i = 0; i < length.val(); i++){
-    //       _x << layers[i].x;
-    //     }
-    //     DFA d(dfa);
-    //     GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
-    //   }
+    
     return ES_FIX;
   }
 
