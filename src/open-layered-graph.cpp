@@ -571,13 +571,9 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     if (i == -1) {
       // advisor is for length, not for a layer
-      if (View::modevent(d) == ME_INT_VAL) {
-        // schedule for rewriting or subsumption:
-        return home.ES_NOFIX_DISPOSE(c,a);
-      }
       if (length.min() > n) {
-          return ES_NOFIX;
-      } 
+          return (View::modevent(d) == ME_INT_VAL) ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
+      }
       else {
         mindist = length.max() + 1;
         bool fix = true;
@@ -594,8 +590,12 @@ namespace Gecode { namespace Int { namespace Extensional {
         }
         if(n + mindist > length.max())
           return ES_FAILED;
-        else
-          return fix ? ES_FIX : ES_NOFIX;
+        else {
+          if (fix)
+            return (View::modevent(d) == ME_INT_VAL) ? home.ES_FIX_DISPOSE(c,a) : ES_FIX;
+          else
+            return (View::modevent(d) == ME_INT_VAL) ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
+        }
       }
     } else {
       if (layers[i].size <= layers[i].x.size()) {
@@ -817,14 +817,14 @@ namespace Gecode { namespace Int { namespace Extensional {
     // Check subsumption
     if (c.empty())
       return home.ES_SUBSUMED(*this);
-    if (length.assigned()) {
-        VarArgArray<typename ViewTraits<View>::Var> _x;
-        for (int i = 0; i < length.val(); i++){
-          _x << layers[i].x;
-        }
-        DFA d(dfa);
-        GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
-      }
+    // if (length.assigned()) {
+    //     VarArgArray<typename ViewTraits<View>::Var> _x;
+    //     for (int i = 0; i < length.val(); i++){
+    //       _x << layers[i].x;
+    //     }
+    //     DFA d(dfa);
+    //     GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
+    //   }
     return ES_FIX;
   }
 
