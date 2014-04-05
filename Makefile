@@ -39,7 +39,9 @@ all : $(LINK_TARGET)
 .PHONY : all
 
 .PHONY : debug
-debug : CXXFLAGS += -ggdb
+debug : CXXFLAGS += -g -g3\
+	-gdwarf-3 \
+	-fvar-tracking-assignments
 debug : all
 
 .PHONY : clean
