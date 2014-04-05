@@ -61,7 +61,7 @@ public:
   virtual Choice* choice(Space& home) {
     if(start >= length.min()){
       assert(!length.assigned());
-      return new PosVal(*this,-1,length.med());
+      return new PosVal(*this,-1,length.min());
     }
     else {
       return new PosVal(*this,start,x[start].min());
@@ -82,9 +82,9 @@ public:
       //assert(start >= length.min());
       // branch on length
       if (a == 0)
-        return me_failed(length.lq(home,val)) ? ES_FAILED : ES_OK;
+        return me_failed(length.eq(home,val)) ? ES_FAILED : ES_OK;
       else
-        return me_failed(length.gr(home,val)) ? ES_FAILED : ES_OK;
+        return me_failed(length.nq(home,val)) ? ES_FAILED : ES_OK;
     } else {
       // branch on an array element
       if (a == 0)
@@ -101,9 +101,9 @@ public:
     int pos=pv.pos, val=pv.val;
     if (pos == -1) {
       if (a == 0)
-        o << "length <= " << val;
+        o << "length = " << val;
       else 
-        o << "length > " << val;
+        o << "length != " << val;
     } else {
       if (a == 0)
         o << "x[" << pos << "] = " << val;
@@ -160,11 +160,11 @@ public:
           break;
         case BRANCH_A_N:
           branch(*this, A, INT_VAR_NONE(), INT_VAL_MIN());
-          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_SPLIT_MIN());
+          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_MIN());
           break;
         case BRANCH_FILTER:
           branch(*this, A, INT_VAR_NONE(), INT_VAL_MIN(), &filter);
-          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_SPLIT_MIN());
+          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_MIN());
           break;
         case BRANCH_BOUND:
           boundednone(*this, A, N);
