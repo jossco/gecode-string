@@ -2,10 +2,25 @@
 #include <gecode/int.hh>
 #include <gecode/minimodel.hh>
 #include "open-layered-graph.hh"
-
+#include <fstream>
+#include <iostream>
 using namespace Gecode;
 
 int wordlength;
+
+std::ostream&
+select_ostream(const char* name, std::ofstream& ofs) {
+  if (strcmp(name, "stdout") == 0) {
+    return std::cout;
+  } else if (strcmp(name, "stdlog") == 0) {
+    return std::clog;
+  } else if (strcmp(name, "stderr") == 0) {
+    return std::cerr;
+  } else {
+    ofs.open(name);
+    return ofs;
+  }
+}
 
 class BoundedNone : public Brancher {
 protected:
@@ -187,6 +202,7 @@ public:
   }
   virtual void print(std::ostream& os) const {
     if (fixed) {
+      os << wordlength << " : [ ";
       for (int i = 0; i < wordlength; i++)
         os << A[i];
     } else {
@@ -199,9 +215,8 @@ public:
           os << A[i];
         os << "}";
       }
-      os << " ]";
     } 
-    os << std::endl;
+    os << " ]" << std::endl;
   }
 };
 
@@ -249,20 +264,35 @@ int main(int argc, char* argv[]) {
       }
     case Revenant::SEARCH_ITERATE:
       {
-        int count = 0;
+        std::ofstream sol_file;
+        std::ostream& s_out = select_ostream(opt.out_file(), sol_file);
+        Support::Timer t;
+        t.start();
+        Search::Statistics stat;
+        int solutions = 0;
         for (wordlength = 1; wordlength <= opt.size()*2; wordlength++ ) {
           Revenant* m = new Revenant(opt);
           DFS<Revenant> e(m);
           delete m;
           while (Revenant* s = e.next()) {
-            s->print(std::cout); delete s; count++;
-            if (opt.solutions() != 0 && count >= opt.solutions())
+            s->print(s_out); delete s;
+            if (++solutions == opt.solutions())
               break;
           }
-          if (opt.solutions() != 0 && count >= opt.solutions())
+          stat += e.statistics();
+          if (opt.solutions() != 0 && solutions >= opt.solutions())
             break;
         }
-        std::cout << "Total Solutions: " << count << std::endl;
+        std::cout << "Summary: " << std::endl
+                  << "\truntime:\t";
+        Driver::stop(t, std::cout);
+        std::cout << "\n\tsolutions:\t"    << solutions << std::endl
+                  << "\tpropagations:\t" << stat.propagate << std::endl
+                  << "\tnodes:\t\t"        << stat.node << std::endl
+                  << "\tfailures:\t"     << stat.fail << std::endl
+                  << "\trestarts:\t"     << stat.restart << std::endl
+                  << "\tno-goods:\t"     << stat.nogood << std::endl
+                  << "\tpeak depth:\t"   << stat.depth << std::endl;
         break;
       }
     case Revenant::SEARCH_DFS:
