@@ -314,11 +314,6 @@ namespace Gecode { namespace Int { namespace Extensional {
         layers[i].states = states + 1 + (i-n-1)*max_states;
       }
 
-      // TODO: I think this is redundant
-      // undo outgoing edges of "final" states in previous last layer
-      for (StateIdx j=0; j < layers[n].n_states; j++){
-        layers[n].states[j].o_deg = 0;
-      }
       // Allocate temporary memory for edges
       Edge* edges = r.alloc<Edge>(dfa.max_degree());
   
@@ -331,8 +326,6 @@ namespace Gecode { namespace Int { namespace Extensional {
         layer_map[dfa_map[i]] = i;
       
       // Forward pass: add transitions
-      // int i = n;
-      // while (i < length.min())
       for (int i=n; i<length.min(); i++) {
         GECODE_ME_CHECK(layers[i].x.inter_v(home,sym,false));
         
@@ -373,12 +366,10 @@ namespace Gecode { namespace Int { namespace Extensional {
         }
         if ((layers[i].size = j) == 0)
           return ES_FAILED;
-        //i++;
       }
-      
     // Mark states that are "close enough" to a dfa-final state
     mindist = length.max() + 1;
-    for (int s=0; s < dfa.n_states(); s++) {
+    for (int s=max_states; s--; ) {
       if (o_state(length.min()-1,static_cast<StateIdx>(s)).i_deg != 0
           && distance[s] + length.min() <= length.max()) {
           o_state(length.min()-1,static_cast<StateIdx>(s)).o_deg = 1;
@@ -389,8 +380,6 @@ namespace Gecode { namespace Int { namespace Extensional {
       }
       
     // Backward pass: prune all transitions that do not lead to final state
-    // TODO: don't reset value of i
-    // while(i-- > 0) {}
     n_edges = 0;
     for (int i=length.min(); i--; ) {
       ValSize k=0;
@@ -557,7 +546,7 @@ namespace Gecode { namespace Int { namespace Extensional {
   OpenLayeredGraph<View,Val,Degree,StateIdx>::advise(Space& home,
                                                  Advisor& _a, const Delta& d) {
     // Check whether state information has already been created
-                                                   if (layers[0].states == NULL) {
+    if (layers[0].states == NULL) {
       State* states = home.alloc<State>(n_states);
       for (unsigned int i=n_states; i--; )
         states[i].init();
@@ -581,31 +570,30 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     if (i == -1) {
       // advisor is for length, not for a layer
+      mindist = length.max() + 1;
+      bool fix = true;
+      for (int s=layers[n].n_states; s--; ) {
+        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
+            && distance[dfa_map[s]] + n <= length.max()) {
+              o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+              mindist = std::min(mindist,distance[dfa_map[s]]);
+        } else
+          if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0) {
+            fix = false;
+          }
+          o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
+      }
+      if(n + mindist > length.max())
+        return ES_FAILED;
+      
       if (length.min() > n) {
           return (View::modevent(d) == ME_INT_VAL) ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
       }
       else {
-        mindist = length.max() + 1;
-        bool fix = true;
-        for (int s=0; s < layers[n].n_states; s++) {
-          if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-              && distance[dfa_map[s]] + n <= length.max()) {
-                o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-                mindist = std::min(mindist,distance[dfa_map[s]]);
-          } else
-            if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0) {
-              fix = false;
-            }
-            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
-        }
-        if(n + mindist > length.max())
-          return ES_FAILED;
-        else {
-          if (fix)
-            return (View::modevent(d) == ME_INT_VAL) ? home.ES_FIX_DISPOSE(c,a) : ES_FIX;
-          else
-            return (View::modevent(d) == ME_INT_VAL) ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
-        }
+        if (fix)
+          return (View::modevent(d) == ME_INT_VAL) ? home.ES_FIX_DISPOSE(c,a) : ES_FIX;
+        else
+          return (View::modevent(d) == ME_INT_VAL) ? home.ES_NOFIX_DISPOSE(c,a) : ES_NOFIX;
       }
     } else {
       if (layers[i].size <= layers[i].x.size()) {
@@ -733,8 +721,9 @@ namespace Gecode { namespace Int { namespace Extensional {
   forceinline size_t
   OpenLayeredGraph<View,Val,Degree,StateIdx>::dispose(Space& home) {
     for (Advisors<Index> a(c); a(); ++a) {
-      Index i = static_cast<Index>(a.advisor());
-      layers[i.i].x.cancel(home,a.advisor());
+      Index ind = static_cast<Index>(a.advisor());
+      assert(ind.i >= 0);
+      layers[ind.i].x.cancel(home,a.advisor());
     }
     c.dispose(home);
     (void) Propagator::dispose(home);
@@ -780,13 +769,32 @@ namespace Gecode { namespace Int { namespace Extensional {
         i_ch.add(i+1);
     }
     
-    // Extend layered graph if min length has increased
-    if (n < length.min()){
-      o_ch.add(length.min()-1);
-      if (extend(home) == ES_FAILED)
-        return ES_FAILED;
+    /// Update lower bound of length if
+    /// there is no dfa-final state in layer[n]:
+    // Update the min distance to any final state   
+    mindist = length.max() + 1;
+    bool o_mod = false;
+    for (int s=layers[n].n_states; s--; ) {
+      if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
+          && distance[dfa_map[s]] + n <= length.max()) {
+            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
+            mindist = std::min(mindist,distance[dfa_map[s]]);
+      } else
+        if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0)
+          o_mod = true;
+        o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
     }
-    if (length.assigned()) {
+    if (o_mod)
+      o_ch.add(n-1);
+    
+    bool repeat;
+    do {
+      repeat = false;
+      // Increase min length if there are no dfa-final states in last layer
+      if (length.gq(home, n + mindist) == Int::ME_INT_FAILED)
+          return ES_FAILED;
+    
+      if (length.assigned()) {
         VarArgArray<typename ViewTraits<View>::Var> _x;
         for (int i = 0; i < length.val(); i++){
           _x << layers[i].x;
@@ -794,6 +802,15 @@ namespace Gecode { namespace Int { namespace Extensional {
         DFA d(dfa);
         GECODE_REWRITE(*this,Int::Extensional::post_lgp(home(*this),_x,d));
       }
+    
+      // Extend layered graph if min length has increased
+      if (n < length.min()){
+        repeat = true;
+        o_ch.add(length.min()-1);
+        if (extend(home) == ES_FAILED)
+          return ES_FAILED;
+      }
+    } while (repeat);
     
     // Backward pass
     for (int i=o_ch.lst(); i>=o_ch.fst(); i--) {
