@@ -593,7 +593,7 @@ namespace Gecode { namespace Int { namespace Extensional {
                 o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
                 mindist = std::min(mindist,distance[dfa_map[s]]);
           } else
-            if (o_state(n-1,static_cast<StateIdx>(s)).o_deg == 1) {
+            if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0) {
               fix = false;
             }
             o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
