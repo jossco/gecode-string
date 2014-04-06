@@ -984,19 +984,22 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Number of in-states
       StateIdx i_n = 0;
     
+      IntArgs new_dfa_map(dfa.n_states());
+      
       n_states -= layers[l].n_states;
       // Initialize map for in-states and compress
       for (StateIdx j=0; j<layers[l].n_states; j++)
         if ((layers[l].states[j].i_deg != 0) ||
             (layers[l].states[j].o_deg != 0)) {
           layers[l].states[i_n]=layers[l].states[j];
-          dfa_map[static_cast<int>(i_n)] = static_cast<int>(j);
+          if (l == n) new_dfa_map[static_cast<int>(i_n)] = dfa_map[static_cast<int>(j)];
           i_map[j]=i_n++;
         }
       layers[l].n_states = i_n;
       n_states += layers[l].n_states;
       assert(i_n > 0);
-    
+      if (l == n)
+        dfa_map = new_dfa_map;
       // Update in-states in edges for last layer, if any
       if (l < n)
         for (ValSize j=layers[l].size; j--; ) {
