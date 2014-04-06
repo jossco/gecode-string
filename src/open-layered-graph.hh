@@ -142,6 +142,8 @@ namespace Gecode { namespace Int { namespace Extensional {
      IntSharedArray distance;
      /// min distance from last layer in lgp, to any dfa-final state
      int mindist;
+     /// map from last layer nodes to dfa states
+     IntSharedArray dfa_map;
      /// The layers of the graph
      Layer* layers;
      /// Maximal number of states per layer
@@ -156,8 +158,6 @@ namespace Gecode { namespace Int { namespace Extensional {
      IndexRange o_ch;
      /// Index range for any change (for compression)
      IndexRange a_ch;
-     /// Check if layer \a i has at least one out edge for a dfa-final state
-     bool dfa_final(int i);
      /// Return in state for layer \a i and state index \a is
      State& i_state(int i, StateIdx is);
      /// Return in state for layer \a i and in state of edge \a e
