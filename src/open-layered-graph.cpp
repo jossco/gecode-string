@@ -311,9 +311,14 @@ namespace Gecode { namespace Int { namespace Extensional {
         dfa_map[0]=0;
       }
       for (int i=length.min(); i > n; i--) {
-        layers[i].states = states + 1 + (i-n-1)*max_states;
+        layers[i].states = states + 1 + ((i-n)-1)*max_states;
       }
 
+      // undo outgoing edges of "final" states in previous last layer
+      for (StateIdx j=0; j < layers[n].n_states; j++){
+        layers[n].states[j].o_deg = 0;
+      }
+      
       // Allocate temporary memory for edges
       Edge* edges = r.alloc<Edge>(dfa.max_degree());
   
@@ -806,9 +811,11 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Extend layered graph if min length has increased
       if (n < length.min()){
         repeat = true;
-        o_ch.add(length.min()-1);
         if (extend(home) == ES_FAILED)
           return ES_FAILED;
+        // already did full bw pass in extend()
+        a_ch.add(o_ch);
+        o_ch.reset();
       }
     } while (repeat);
     
