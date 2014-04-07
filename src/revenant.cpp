@@ -223,11 +223,12 @@ public:
 int main(int argc, char* argv[]) {
   
   SizeOptions opt("Revenant test");
-  
-  opt.size(50);
-  
-  opt.solutions(0);
-  
+                    // defaults:
+  opt.size(5);      // a small instance
+  opt.solutions(0); // all solutions
+  opt.threads(1);   // sequential, deterministic search
+  opt.c_d(1);       // no recomputation
+    
   opt.branching(Revenant::BRANCH_A_N,    "an",      "branch array, then length");
   opt.branching(Revenant::BRANCH_N_A,    "na",      "branch length, then array");
   opt.branching(Revenant::BRANCH_FILTER, "filter",  "filter to branch on characters under min length");
@@ -269,10 +270,13 @@ int main(int argc, char* argv[]) {
         Support::Timer t;
         t.start();
         Search::Statistics stat;
+        Search::Options sopt;
+        sopt.threads = opt.threads();
+        sopt.c_d = opt.c_d();
         int solutions = 0;
         for (wordlength = 1; wordlength <= opt.size()*2; wordlength++ ) {
           Revenant* m = new Revenant(opt);
-          DFS<Revenant> e(m);
+          DFS<Revenant> e(m,sopt);
           delete m;
           while (Revenant* s = e.next()) {
             s->print(s_out); delete s;
