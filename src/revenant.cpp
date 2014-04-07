@@ -207,7 +207,7 @@ public:
         os << A[i];
     } else {
       os << N << " : [ ";
-      for (int i = 0; i < N.min(); i++)
+      for (int i = 0; i < std::min(N.min(),A.size()); i++)
         os << A[i];
       if (!N.assigned()) {
         os << "{";
