@@ -728,6 +728,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     for (Advisors<Index> a(c); a(); ++a) {
       Index ind = static_cast<Index>(a.advisor());
       assert(ind.i >= 0);
+      assert(ind.i < length.max());
       layers[ind.i].x.cancel(home,a.advisor());
     }
     c.dispose(home);
@@ -927,6 +928,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       layers[i].states = NULL;
     }
     // copy final-layer-to-dfa map
+    dfa_map = home.alloc<int>(max_states);
     for (int j=layers[n].n_states; j--; )
       dfa_map[j] = p.dfa_map[j];
     
