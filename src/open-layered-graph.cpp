@@ -307,7 +307,7 @@ namespace Gecode { namespace Int { namespace Extensional {
         layers[0].n_states = 1;
         n_states = 1;
         // Mark initial state as being reachable
-        i_state(0,0).i_deg = 1;
+        i_state(0,static_cast<StateIdx>(0)).i_deg = 1;
         dfa_map[0]=0;
       }
       for (int i=length.min(); i > n; i--) {
