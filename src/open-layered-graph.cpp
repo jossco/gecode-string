@@ -515,7 +515,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     for (int i = 0; i < dfa.n_states(); i++)
       dist[i] = static_cast<int>(d[i].Value());
     distance = dist;
-    dfa_map = IntSharedArray(max_states);
+    dfa_map = home.alloc<int>(max_states);
     // shortest accepted string gives a lower bound on length
     if (length.gq(home, distance[0]) == Int::ME_INT_FAILED)
         return ES_FAILED;
@@ -898,7 +898,6 @@ namespace Gecode { namespace Int { namespace Extensional {
     length.update(home,share,p.length);
     dfa.update(home,share,p.dfa);
     distance.update(home, share, p.distance);
-    dfa_map.update(home, share, p.dfa_map);
     
     // Do not allocate states, postpone to advise!
     layers[n].n_states = p.layers[n].n_states;
@@ -927,6 +926,10 @@ namespace Gecode { namespace Int { namespace Extensional {
       layers[i].n_states = p.layers[i].n_states;
       layers[i].states = NULL;
     }
+    // copy final-layer-to-dfa map
+    for (int j=layers[n].n_states; j--; )
+      dfa_map[j] = p.dfa_map[j];
+    
     audit();
   }
 
@@ -991,7 +994,7 @@ namespace Gecode { namespace Int { namespace Extensional {
       // Number of in-states
       StateIdx i_n = 0;
     
-      IntArgs new_dfa_map(dfa.n_states());
+      int* new_dfa_map = r.alloc<int>(dfa.n_states());
       
       n_states -= layers[l].n_states;
       // Initialize map for in-states and compress
@@ -1005,8 +1008,12 @@ namespace Gecode { namespace Int { namespace Extensional {
       layers[l].n_states = i_n;
       n_states += layers[l].n_states;
       assert(i_n > 0);
+      
+      // Update map to dfa if last layer changed
       if (l == n)
-        dfa_map = new_dfa_map;
+        for (StateIdx j=layers[l].n_states; j--; )
+          dfa_map[j] = new_dfa_map[j];
+      
       // Update in-states in edges for last layer, if any
       if (l < n)
         for (ValSize j=layers[l].size; j--; ) {

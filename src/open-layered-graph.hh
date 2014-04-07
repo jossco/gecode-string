@@ -143,7 +143,7 @@ namespace Gecode { namespace Int { namespace Extensional {
      /// min distance from last layer in lgp, to any dfa-final state
      int mindist;
      /// map from last layer nodes to dfa states
-     IntSharedArray dfa_map;
+     int* dfa_map;
      /// The layers of the graph
      Layer* layers;
      /// Maximal number of states per layer
