@@ -26,7 +26,8 @@ LINK_TARGET = 	\
 ALT_TARGETS = 	dfa2fst
 
 MODULES = \
-	open-layered-graph.o 
+	open-layered-graph.o \
+	bounded-none.o
 
 OBJS = $(patsubst %,%.o,$(LINK_TARGET)) $(patsubst %,%.o,$(ALT_TARGETS))
 
