@@ -10,24 +10,24 @@ Please avoid modifying this file directly...
 using namespace Gecode;
 
  
-#ifndef OPEN_char_avvvv_PROPAG_
-#define OPEN_char_avvvv_PROPAG_
-namespace OPEN_char_avvvv{
-class OPEN_char_avvvv_genPropagator : public Propagator {
+#ifndef OPEN_PROPS_HH
+#define OPEN_PROPS_HH
+namespace Gecode { namespace Open { namespace CharacterAt {
+class CharacterAt : public Propagator {
 protected:
 	ViewArray<Int::IntView> X;
 	Int::IntView Xn;
 	Int::IntView C;
 	Int::IntView Index;
 public:
-	OPEN_char_avvvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, Int::IntView _C, Int::IntView _Index);
-	OPEN_char_avvvv_genPropagator(Home home, bool share, OPEN_char_avvvv_genPropagator& p);
+	CharacterAt(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, Int::IntView _C, Int::IntView _Index);
+	CharacterAt(Home home, bool share, CharacterAt& p);
 	virtual size_t dispose(Space& home);
 	static ExecStatus post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, Int::IntView C, Int::IntView Index);
 	virtual ExecStatus propagate(Space& home, const Gecode::ModEventDelta& med);
 
 	virtual Propagator* copy(Space& home, bool share){
-		return new (home) OPEN_char_avvvv_genPropagator(home,share, *this);	
+		return new (home) CharacterAt(home,share, *this);	
 	}
 	virtual PropCost cost(const Space& home, const ModEventDelta& med) const{
 		return PropCost::linear(PropCost::LO,(X).size());
@@ -36,21 +36,17 @@ public:
 };
 
 enum Propag {OPEN_char_avvvv_gen};
-}//end of namespace OPEN_char_avvvv
+}}}
 
 /*
  functions used to post the constraint.
  generated.
 */
-void OPEN_char(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, IntConLevel icl);
-void OPEN_char(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, OPEN_char_avvvv::Propag _prop);
-#endif //ifndef OPEN_char_avvvv_PROPAG_
+void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, IntConLevel icl);
+void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, Open::CharacterAt::Propag _prop);
 
- 
-#ifndef OPEN_concat_avvavvavv_PROPAG_
-#define OPEN_concat_avvavvavv_PROPAG_
-namespace OPEN_concat_avvavvavv{
-class OPEN_concat_avvavvavv_genPropagator : public Propagator {
+namespace Gecode { namespace Open { namespace Concat {
+class Concat : public Propagator {
 protected:
 	ViewArray<Int::IntView> X;
 	Int::IntView Xn;
@@ -59,14 +55,14 @@ protected:
 	ViewArray<Int::IntView> Z;
 	Int::IntView Zn;
 public:
-	OPEN_concat_avvavvavv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, ViewArray<Int::IntView> _Z, Int::IntView _Zn);
-	OPEN_concat_avvavvavv_genPropagator(Home home, bool share, OPEN_concat_avvavvavv_genPropagator& p);
+	Concat(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, ViewArray<Int::IntView> _Z, Int::IntView _Zn);
+	Concat(Home home, bool share, Concat& p);
 	virtual size_t dispose(Space& home);
 	static ExecStatus post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, ViewArray<Int::IntView> Z, Int::IntView Zn);
 	virtual ExecStatus propagate(Space& home, const Gecode::ModEventDelta& med);
 
 	virtual Propagator* copy(Space& home, bool share){
-		return new (home) OPEN_concat_avvavvavv_genPropagator(home,share, *this);	
+		return new (home) Concat(home,share, *this);	
 	}
 	virtual PropCost cost(const Space& home, const ModEventDelta& med) const{
 		return PropCost::linear(PropCost::LO,Yn.size()+(Y).size());
@@ -75,35 +71,31 @@ public:
 };
 
 enum Propag {OPEN_concat_avvavvavv_gen};
-}//end of namespace OPEN_concat_avvavvavv
+}}}//end of namespace OPEN_concat_avvavvavv
 
 /*
  functions used to post the constraint.
  generated.
 */
-void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, IntConLevel icl);
-void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, OPEN_concat_avvavvavv::Propag _prop);
-#endif //ifndef OPEN_concat_avvavvavv_PROPAG_
+void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, IntConLevel icl);
+void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, Open::Concat::Propag _prop);
 
- 
-#ifndef OPEN_equal_avvavv_PROPAG_
-#define OPEN_equal_avvavv_PROPAG_
-namespace OPEN_equal_avvavv{
-class OPEN_equal_avvavv_genPropagator : public Propagator {
+namespace Gecode { namespace Open { namespace Equal {
+class Equal : public Propagator {
 protected:
 	ViewArray<Int::IntView> X;
 	Int::IntView Xn;
 	ViewArray<Int::IntView> Y;
 	Int::IntView Yn;
 public:
-	OPEN_equal_avvavv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn);
-	OPEN_equal_avvavv_genPropagator(Home home, bool share, OPEN_equal_avvavv_genPropagator& p);
+	Equal(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn);
+	Equal(Home home, bool share, Equal& p);
 	virtual size_t dispose(Space& home);
 	static ExecStatus post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn);
 	virtual ExecStatus propagate(Space& home, const Gecode::ModEventDelta& med);
 
 	virtual Propagator* copy(Space& home, bool share){
-		return new (home) OPEN_equal_avvavv_genPropagator(home,share, *this);	
+		return new (home) Equal(home,share, *this);	
 	}
 	virtual PropCost cost(const Space& home, const ModEventDelta& med) const{
 		return PropCost::linear(PropCost::LO,Yn.size()+(Y).size());
@@ -112,59 +104,17 @@ public:
 };
 
 enum Propag {OPEN_equal_avvavv_gen};
-}//end of namespace OPEN_equal_avvavv
+}}}//end of namespace OPEN_equal_avvavv
 
 /*
  functions used to post the constraint.
  generated.
 */
-void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntConLevel icl);
-void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, OPEN_equal_avvavv::Propag _prop);
-#endif //ifndef OPEN_equal_avvavv_PROPAG_
+void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntConLevel icl);
+void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, Open::Equal::Propag _prop);
 
- 
-#ifndef OPEN_region_avvavvv_PROPAG_
-#define OPEN_region_avvavvv_PROPAG_
-namespace OPEN_region_avvavvv{
-class OPEN_region_avvavvv_genPropagator : public Propagator {
-protected:
-	ViewArray<Int::IntView> X;
-	Int::IntView Xn;
-	ViewArray<Int::IntView> Y;
-	Int::IntView Yn;
-	Int::IntView Offset;
-public:
-	OPEN_region_avvavvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Offset);
-	OPEN_region_avvavvv_genPropagator(Home home, bool share, OPEN_region_avvavvv_genPropagator& p);
-	virtual size_t dispose(Space& home);
-	static ExecStatus post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, Int::IntView Offset);
-	virtual ExecStatus propagate(Space& home, const Gecode::ModEventDelta& med);
-
-	virtual Propagator* copy(Space& home, bool share){
-		return new (home) OPEN_region_avvavvv_genPropagator(home,share, *this);	
-	}
-	virtual PropCost cost(const Space& home, const ModEventDelta& med) const{
-		return PropCost::linear(PropCost::LO,Yn.size()+(Y).size());
-	}
-
-};
-
-enum Propag {OPEN_region_avvavvv_gen};
-}//end of namespace OPEN_region_avvavvv
-
-/*
- functions used to post the constraint.
- generated.
-*/
-void OPEN_region(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Offset, IntConLevel icl);
-void OPEN_region(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Offset, OPEN_region_avvavvv::Propag _prop);
-#endif //ifndef OPEN_region_avvavvv_PROPAG_
-
- 
-#ifndef OPEN_substr_avvavvv_PROPAG_
-#define OPEN_substr_avvavvv_PROPAG_
-namespace OPEN_substr_avvavvv{
-class OPEN_substr_avvavvv_genPropagator : public Propagator {
+namespace Gecode { namespace Open { namespace Substring {
+class Substring : public Propagator {
 protected:
 	ViewArray<Int::IntView> X;
 	Int::IntView Xn;
@@ -172,14 +122,14 @@ protected:
 	Int::IntView Yn;
 	Int::IntView Index;
 public:
-	OPEN_substr_avvavvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Index);
-	OPEN_substr_avvavvv_genPropagator(Home home, bool share, OPEN_substr_avvavvv_genPropagator& p);
+	Substring(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Index);
+	Substring(Home home, bool share, Substring& p);
 	virtual size_t dispose(Space& home);
 	static ExecStatus post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, Int::IntView Index);
 	virtual ExecStatus propagate(Space& home, const Gecode::ModEventDelta& med);
 
 	virtual Propagator* copy(Space& home, bool share){
-		return new (home) OPEN_substr_avvavvv_genPropagator(home,share, *this);	
+		return new (home) Substring(home,share, *this);	
 	}
 	virtual PropCost cost(const Space& home, const ModEventDelta& med) const{
 		return PropCost::linear(PropCost::LO,Yn.size()+(Y).size());
@@ -188,12 +138,12 @@ public:
 };
 
 enum Propag {OPEN_substr_avvavvv_gen};
-}//end of namespace OPEN_substr_avvavvv
+}}}//end of namespace OPEN_substr_avvavvv
 
 /*
  functions used to post the constraint.
  generated.
 */
-void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, IntConLevel icl);
-void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, OPEN_substr_avvavvv::Propag _prop);
-#endif //ifndef OPEN_substr_avvavvv_PROPAG_ 
+void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, IntConLevel icl);
+void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, Open::Substring::Propag _prop);
+#endif

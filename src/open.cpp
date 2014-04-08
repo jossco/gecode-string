@@ -12,9 +12,9 @@ using namespace Gecode;
 
  
 
-namespace OPEN_char_avvvv{
+namespace Gecode { namespace Open { namespace CharacterAt {
 
-OPEN_char_avvvv_genPropagator::OPEN_char_avvvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, Int::IntView _C, Int::IntView _Index)
+CharacterAt::CharacterAt(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, Int::IntView _C, Int::IntView _Index)
 : Propagator(home), X(_X),Xn(_Xn),C(_C),Index(_Index){
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].subscribe(home,*this,Int::PC_INT_BND);
@@ -23,13 +23,13 @@ OPEN_char_avvvv_genPropagator::OPEN_char_avvvv_genPropagator(Home home, ViewArra
 	Xn.subscribe(home,*this,Int::PC_INT_BND);
 	C.subscribe(home,*this,Int::PC_INT_BND);
 }
-OPEN_char_avvvv_genPropagator::OPEN_char_avvvv_genPropagator(Home home, bool share, OPEN_char_avvvv_genPropagator& p):Propagator(home, share, p){
+CharacterAt::CharacterAt(Home home, bool share, CharacterAt& p):Propagator(home, share, p){
 	X.update(home,share,p.X);
 	Xn.update(home,share,p.Xn);
 	C.update(home,share,p.C);
 	Index.update(home,share,p.Index);
 }
-size_t OPEN_char_avvvv_genPropagator::dispose(Space& home){
+size_t CharacterAt::dispose(Space& home){
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].cancel(home,*this,Int::PC_INT_BND);
 	 } 
@@ -40,17 +40,17 @@ size_t OPEN_char_avvvv_genPropagator::dispose(Space& home){
 	return sizeof(*this);
 }
 
-ExecStatus OPEN_char_avvvv_genPropagator::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, Int::IntView C, Int::IntView Index){
+ExecStatus CharacterAt::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, Int::IntView C, Int::IntView Index){
 	//initial prop
 	bool nafp = false;
 
 	GECODE_ME_CHECK_MODIFIED(nafp,Index.gq(home,0));
 	GECODE_ME_CHECK_MODIFIED(nafp,Index.lq(home,(X.size() + -1)));
 
-	(void) new (home) OPEN_char_avvvv_genPropagator(home,X, Xn, C, Index);
+	(void) new (home) CharacterAt(home,X, Xn, C, Index);
 	return ES_OK;
 }
-ExecStatus OPEN_char_avvvv_genPropagator::propagate(Space& home, const Gecode::ModEventDelta& med){
+ExecStatus CharacterAt::propagate(Space& home, const Gecode::ModEventDelta& med){
 	bool nafp = true;
 	while(nafp){
 		nafp = false;
@@ -58,10 +58,10 @@ ExecStatus OPEN_char_avvvv_genPropagator::propagate(Space& home, const Gecode::M
 		int localvar3 = Index.min();
 		GECODE_ME_CHECK_MODIFIED(nafp,Xn.gq(home,localvar3));
 
-		Region region_naryvar0(home);
+		Region r(home);
 		Iter::Ranges::Empty empty_naryvar0;
 
-		Iter::Ranges::NaryUnion naryvar0(region_naryvar0,empty_naryvar0); 
+		Iter::Ranges::NaryUnion naryvar0(r,empty_naryvar0); 
 		 for(int ii2=localvar3;ii2<=Index.max();ii2++){
 		 	Iter::Ranges::Singleton localvar40(X[ii2].min(),X[ii2].max()); 
 		 	naryvar0 |= localvar40;
@@ -94,37 +94,37 @@ ExecStatus OPEN_char_avvvv_genPropagator::propagate(Space& home, const Gecode::M
 }
 
 
-}//end of namespace OPEN_char_avvvv
+}}}//end of namespace OPEN_char_avvvv
 
 /*
  functions used to post the constraint.
  generated.
 */
-void OPEN_char(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, IntConLevel icl=ICL_DEF){
+void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, IntConLevel icl=ICL_DEF){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
 	Int::IntView C(_C);
 	Int::IntView Index(_Index);
-	if(icl==ICL_BND) GECODE_ES_FAIL(OPEN_char_avvvv::OPEN_char_avvvv_genPropagator::post(home,X, Xn, C, Index));
-		else GECODE_ES_FAIL(OPEN_char_avvvv::OPEN_char_avvvv_genPropagator::post(home,X, Xn, C, Index));
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::CharacterAt::CharacterAt::post(home,X, Xn, C, Index));
+		else GECODE_ES_FAIL(Open::CharacterAt::CharacterAt::post(home,X, Xn, C, Index));
 
 }
-void OPEN_char(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, OPEN_char_avvvv::Propag _prop){
+void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, Open::CharacterAt::Propag _prop){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
 	Int::IntView C(_C);
 	Int::IntView Index(_Index);	
-	if(_prop==OPEN_char_avvvv::OPEN_char_avvvv_gen) GECODE_ES_FAIL(OPEN_char_avvvv::OPEN_char_avvvv_genPropagator::post(home,X, Xn, C, Index));
+	if(_prop==Open::CharacterAt::OPEN_char_avvvv_gen) GECODE_ES_FAIL(Open::CharacterAt::CharacterAt::post(home,X, Xn, C, Index));
 }
 
 
  
 
-namespace OPEN_concat_avvavvavv{
+namespace Gecode { namespace Open { namespace Concat {
 
-OPEN_concat_avvavvavv_genPropagator::OPEN_concat_avvavvavv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, ViewArray<Int::IntView> _Z, Int::IntView _Zn)
+Concat::Concat(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, ViewArray<Int::IntView> _Z, Int::IntView _Zn)
 : Propagator(home), X(_X),Xn(_Xn),Y(_Y),Yn(_Yn),Z(_Z),Zn(_Zn){
 	Zn.subscribe(home,*this,Int::PC_INT_BND);
 	 for(int _i_=0;_i_<=Z.size()-1;_i_++){
@@ -139,7 +139,7 @@ OPEN_concat_avvavvavv_genPropagator::OPEN_concat_avvavvavv_genPropagator(Home ho
 	 } 
 	Yn.subscribe(home,*this,Int::PC_INT_BND);
 }
-OPEN_concat_avvavvavv_genPropagator::OPEN_concat_avvavvavv_genPropagator(Home home, bool share, OPEN_concat_avvavvavv_genPropagator& p):Propagator(home, share, p){
+Concat::Concat(Home home, bool share, Concat& p):Propagator(home, share, p){
 	X.update(home,share,p.X);
 	Xn.update(home,share,p.Xn);
 	Y.update(home,share,p.Y);
@@ -147,7 +147,7 @@ OPEN_concat_avvavvavv_genPropagator::OPEN_concat_avvavvavv_genPropagator(Home ho
 	Z.update(home,share,p.Z);
 	Zn.update(home,share,p.Zn);
 }
-size_t OPEN_concat_avvavvavv_genPropagator::dispose(Space& home){
+size_t Concat::dispose(Space& home){
 	Zn.cancel(home,*this,Int::PC_INT_BND);
 	 for(int _i_=0;_i_<=Z.size()-1;_i_++){
 	 	Z[_i_].cancel(home,*this,Int::PC_INT_BND);
@@ -164,12 +164,12 @@ size_t OPEN_concat_avvavvavv_genPropagator::dispose(Space& home){
 	return sizeof(*this);
 }
 
-ExecStatus OPEN_concat_avvavvavv_genPropagator::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, ViewArray<Int::IntView> Z, Int::IntView Zn){
+ExecStatus Concat::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, ViewArray<Int::IntView> Z, Int::IntView Zn){
 	//initial prop
-	(void) new (home) OPEN_concat_avvavvavv_genPropagator(home,X, Xn, Y, Yn, Z, Zn);
+	(void) new (home) Concat(home,X, Xn, Y, Yn, Z, Zn);
 	return ES_OK;
 }
-ExecStatus OPEN_concat_avvavvavv_genPropagator::propagate(Space& home, const Gecode::ModEventDelta& med){
+ExecStatus Concat::propagate(Space& home, const Gecode::ModEventDelta& med){
 	bool nafp = true;
 	while(nafp){
 		nafp = false;
@@ -234,10 +234,10 @@ ExecStatus OPEN_concat_avvavvavv_genPropagator::propagate(Space& home, const Gec
 			int localvar272 = (localvar264 + localvar136);
 			Iter::Ranges::NaryUnion naryvar1[localvar272+1];
 			 for(int i=0;i<=localvar272;i++){
-			 	Region region_naryvar1_i_(home);
+			 	Region r(home);
 			 	Iter::Ranges::Empty empty_naryvar1_i_;
 
-			 	naryvar1[i] = Iter::Ranges::NaryUnion(region_naryvar1_i_,empty_naryvar1_i_); 
+			 	naryvar1[i] = Iter::Ranges::NaryUnion(r,empty_naryvar1_i_); 
 			 	 for(int ii22=(i + (localvar129 + localvar57));ii22<=(i + (localvar129 + localvar61));ii22++){
 			 	 	Iter::Ranges::Singleton localvar388(Y[ii22].min(),Y[ii22].max()); 
 			 	 	naryvar1[i] |= localvar388;
@@ -262,10 +262,10 @@ ExecStatus OPEN_concat_avvavvavv_genPropagator::propagate(Space& home, const Gec
 			int localvar294 = (localvar285 + localvar176);
 			Iter::Ranges::NaryUnion naryvar2[localvar294+1];
 			 for(int j=0;j<=localvar294;j++){
-			 	Region region_naryvar2_j_(home);
+			 	Region r(home);
 			 	Iter::Ranges::Empty empty_naryvar2_j_;
 
-			 	naryvar2[j] = Iter::Ranges::NaryUnion(region_naryvar2_j_,empty_naryvar2_j_); 
+			 	naryvar2[j] = Iter::Ranges::NaryUnion(r,empty_naryvar2_j_); 
 			 	 for(int ii8=(j + (localvar168 + localvar41));ii8<=(j + (localvar168 + localvar44));ii8++){
 			 	 	Iter::Ranges::Singleton localvar403(Z[ii8].min(),Z[ii8].max()); 
 			 	 	naryvar2[j] |= localvar403;
@@ -339,7 +339,7 @@ ExecStatus OPEN_concat_avvavvavv_genPropagator::propagate(Space& home, const Gec
 }
 
 
-}//end of namespace OPEN_concat_avvavvavv
+}}}//end of namespace OPEN_concat_avvavvavv
 
 /*
  functions used to post the constraint.
@@ -353,11 +353,11 @@ void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn
 	Int::IntView Yn(_Yn);
 	ViewArray<Int::IntView> Z(home,_Z);
 	Int::IntView Zn(_Zn);
-	if(icl==ICL_BND) GECODE_ES_FAIL(OPEN_concat_avvavvavv::OPEN_concat_avvavvavv_genPropagator::post(home,X, Xn, Y, Yn, Z, Zn));
-		else GECODE_ES_FAIL(OPEN_concat_avvavvavv::OPEN_concat_avvavvavv_genPropagator::post(home,X, Xn, Y, Yn, Z, Zn));
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
+		else GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
 
 }
-void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, OPEN_concat_avvavvavv::Propag _prop){
+void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, Open::Concat::Propag _prop){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
@@ -365,15 +365,15 @@ void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn
 	Int::IntView Yn(_Yn);
 	ViewArray<Int::IntView> Z(home,_Z);
 	Int::IntView Zn(_Zn);	
-	if(_prop==OPEN_concat_avvavvavv::OPEN_concat_avvavvavv_gen) GECODE_ES_FAIL(OPEN_concat_avvavvavv::OPEN_concat_avvavvavv_genPropagator::post(home,X, Xn, Y, Yn, Z, Zn));
+	if(_prop==Open::Concat::OPEN_concat_avvavvavv_gen) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
 }
 
 
  
 
-namespace OPEN_equal_avvavv{
+namespace Gecode { namespace Open { namespace Equal {
 
-OPEN_equal_avvavv_genPropagator::OPEN_equal_avvavv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn)
+Equal::Equal(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn)
 : Propagator(home), X(_X),Xn(_Xn),Y(_Y),Yn(_Yn){
 	Xn.subscribe(home,*this,Int::PC_INT_BND);
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
@@ -384,13 +384,13 @@ OPEN_equal_avvavv_genPropagator::OPEN_equal_avvavv_genPropagator(Home home, View
 	 } 
 	Yn.subscribe(home,*this,Int::PC_INT_BND);
 }
-OPEN_equal_avvavv_genPropagator::OPEN_equal_avvavv_genPropagator(Home home, bool share, OPEN_equal_avvavv_genPropagator& p):Propagator(home, share, p){
+Equal::Equal(Home home, bool share, Equal& p):Propagator(home, share, p){
 	X.update(home,share,p.X);
 	Xn.update(home,share,p.Xn);
 	Y.update(home,share,p.Y);
 	Yn.update(home,share,p.Yn);
 }
-size_t OPEN_equal_avvavv_genPropagator::dispose(Space& home){
+size_t Equal::dispose(Space& home){
 	Xn.cancel(home,*this,Int::PC_INT_BND);
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].cancel(home,*this,Int::PC_INT_BND);
@@ -403,12 +403,12 @@ size_t OPEN_equal_avvavv_genPropagator::dispose(Space& home){
 	return sizeof(*this);
 }
 
-ExecStatus OPEN_equal_avvavv_genPropagator::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn){
+ExecStatus Equal::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn){
 	//initial prop
-	(void) new (home) OPEN_equal_avvavv_genPropagator(home,X, Xn, Y, Yn);
+	(void) new (home) Equal(home,X, Xn, Y, Yn);
 	return ES_OK;
 }
-ExecStatus OPEN_equal_avvavv_genPropagator::propagate(Space& home, const Gecode::ModEventDelta& med){
+ExecStatus Equal::propagate(Space& home, const Gecode::ModEventDelta& med){
 	bool nafp = true;
 	while(nafp){
 		nafp = false;
@@ -492,7 +492,7 @@ ExecStatus OPEN_equal_avvavv_genPropagator::propagate(Space& home, const Gecode:
 }
 
 
-}//end of namespace OPEN_equal_avvavv
+}}}//end of namespace OPEN_equal_avvavv
 
 /*
  functions used to post the constraint.
@@ -504,198 +504,23 @@ void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn,
 	Int::IntView Xn(_Xn);
 	ViewArray<Int::IntView> Y(home,_Y);
 	Int::IntView Yn(_Yn);
-	if(icl==ICL_BND) GECODE_ES_FAIL(OPEN_equal_avvavv::OPEN_equal_avvavv_genPropagator::post(home,X, Xn, Y, Yn));
-		else GECODE_ES_FAIL(OPEN_equal_avvavv::OPEN_equal_avvavv_genPropagator::post(home,X, Xn, Y, Yn));
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
+		else GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
 
 }
-void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, OPEN_equal_avvavv::Propag _prop){
+void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, Open::Equal::Propag _prop){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
 	ViewArray<Int::IntView> Y(home,_Y);
 	Int::IntView Yn(_Yn);	
-	if(_prop==OPEN_equal_avvavv::OPEN_equal_avvavv_gen) GECODE_ES_FAIL(OPEN_equal_avvavv::OPEN_equal_avvavv_genPropagator::post(home,X, Xn, Y, Yn));
+	if(_prop==Open::Equal::OPEN_equal_avvavv_gen) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
 }
 
 
- 
+namespace Gecode { namespace Open { namespace Substring {
 
-namespace OPEN_region_avvavvv{
-
-OPEN_region_avvavvv_genPropagator::OPEN_region_avvavvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Offset)
-: Propagator(home), X(_X),Xn(_Xn),Y(_Y),Yn(_Yn),Offset(_Offset){
-	 for(int _i_=0;_i_<=X.size()-1;_i_++){
-	 	X[_i_].subscribe(home,*this,Int::PC_INT_BND);
-	 } 
-	Xn.subscribe(home,*this,Int::PC_INT_BND);
-	Offset.subscribe(home,*this,Int::PC_INT_BND);
-	 for(int _i_=0;_i_<=Y.size()-1;_i_++){
-	 	Y[_i_].subscribe(home,*this,Int::PC_INT_BND);
-	 } 
-	Yn.subscribe(home,*this,Int::PC_INT_BND);
-}
-OPEN_region_avvavvv_genPropagator::OPEN_region_avvavvv_genPropagator(Home home, bool share, OPEN_region_avvavvv_genPropagator& p):Propagator(home, share, p){
-	X.update(home,share,p.X);
-	Xn.update(home,share,p.Xn);
-	Y.update(home,share,p.Y);
-	Yn.update(home,share,p.Yn);
-	Offset.update(home,share,p.Offset);
-}
-size_t OPEN_region_avvavvv_genPropagator::dispose(Space& home){
-	 for(int _i_=0;_i_<=X.size()-1;_i_++){
-	 	X[_i_].cancel(home,*this,Int::PC_INT_BND);
-	 } 
-	Xn.cancel(home,*this,Int::PC_INT_BND);
-	Offset.cancel(home,*this,Int::PC_INT_BND);
-	 for(int _i_=0;_i_<=Y.size()-1;_i_++){
-	 	Y[_i_].cancel(home,*this,Int::PC_INT_BND);
-	 } 
-	Yn.cancel(home,*this,Int::PC_INT_BND);
-	(void) Propagator::dispose(home);
-	return sizeof(*this);
-}
-
-ExecStatus OPEN_region_avvavvv_genPropagator::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, Int::IntView Offset){
-	//initial prop
-	(void) new (home) OPEN_region_avvavvv_genPropagator(home,X, Xn, Y, Yn, Offset);
-	return ES_OK;
-}
-ExecStatus OPEN_region_avvavvv_genPropagator::propagate(Space& home, const Gecode::ModEventDelta& med){
-	bool nafp = true;
-	while(nafp){
-		nafp = false;
-		int localvar517 = Offset.max();
-		int localvar518 = std::max(localvar517,0);
-		int localvar520 = (Xn.min() + -1);
-		int localvar521 = Offset.min();
-		int localvar523 = (Yn.min() + -1);
-		int localvar525 = std::min(localvar520,(localvar521 + localvar523));
-		if((localvar518 <= localvar525)){
-			int localvar623 = -localvar517;
-			int localvar624 = std::min(localvar623,0);
-			int localvar632 = (localvar624 + localvar525);
-			Iter::Ranges::NaryUnion naryvar9[localvar632+1];
-			 for(int i=0;i<=localvar632;i++){
-			 	Region region_naryvar9_i_(home);
-			 	Iter::Ranges::Empty empty_naryvar9_i_;
-
-			 	naryvar9[i] = Iter::Ranges::NaryUnion(region_naryvar9_i_,empty_naryvar9_i_); 
-			 	 for(int ii22=(i + (localvar518 + localvar623));ii22<=(i + (localvar518 + -localvar521));ii22++){
-			 	 	Iter::Ranges::Singleton localvar726(Y[ii22].min(),Y[ii22].max()); 
-			 	 	naryvar9[i] |= localvar726;
-			 	 } 
-			 } 
-			 for(int i=localvar518;i<=localvar525;i++){
-			 	GECODE_ME_CHECK_MODIFIED(nafp,X[i].inter_r(home,naryvar9[(i + localvar624)]));
-			 	int localvar540 = Y.size();
-			 	GECODE_ME_CHECK_MODIFIED(nafp,Offset.gq(home,(-localvar540 + (i + 1))));
-			 	GECODE_ME_CHECK_MODIFIED(nafp,Offset.lq(home,i));
-			 	 for(int ii15=0;ii15<=(localvar540 + -1);ii15++){
-			 	 	if(((X[i].max() < Y[ii15].min()) || (Y[ii15].max() < X[i].min()))){
-			 	 		GECODE_ME_CHECK_MODIFIED(nafp,Offset.nq(home,(-ii15 + i)));
-			 	 	} 
-			 	 } 
-			 } 
-		} 
-		int localvar556 = -localvar521;
-		int localvar557 = std::max(localvar556,0);
-		int localvar561 = -localvar517;
-		int localvar565 = std::min(localvar523,(localvar561 + localvar520));
-		if((localvar557 <= localvar565)){
-			int localvar645 = std::min(localvar521,0);
-			int localvar654 = (localvar645 + localvar565);
-			Iter::Ranges::NaryUnion naryvar10[localvar654+1];
-			 for(int j=0;j<=localvar654;j++){
-			 	Region region_naryvar10_j_(home);
-			 	Iter::Ranges::Empty empty_naryvar10_j_;
-
-			 	naryvar10[j] = Iter::Ranges::NaryUnion(region_naryvar10_j_,empty_naryvar10_j_); 
-			 	 for(int ii8=(j + (localvar557 + localvar521));ii8<=(j + (localvar557 + localvar517));ii8++){
-			 	 	Iter::Ranges::Singleton localvar741(X[ii8].min(),X[ii8].max()); 
-			 	 	naryvar10[j] |= localvar741;
-			 	 } 
-			 } 
-			 for(int j=localvar557;j<=localvar565;j++){
-			 	int localvar578 = -j;
-			 	GECODE_ME_CHECK_MODIFIED(nafp,Offset.gq(home,localvar578));
-			 	int localvar579 = X.size();
-			 	GECODE_ME_CHECK_MODIFIED(nafp,Offset.lq(home,(localvar579 + (localvar578 + -1))));
-			 	 for(int ii9=0;ii9<=(localvar579 + -1);ii9++){
-			 	 	if(((Y[j].max() < X[ii9].min()) || (X[ii9].max() < Y[j].min()))){
-			 	 		GECODE_ME_CHECK_MODIFIED(nafp,Offset.nq(home,(ii9 + localvar578)));
-			 	 	} 
-			 	 } 
-			 	GECODE_ME_CHECK_MODIFIED(nafp,Y[j].inter_r(home,naryvar10[(j + localvar645)]));
-			 } 
-		} 
-		bool naryvar11 = true;
-		int localvar667 = std::max(localvar521,0);
-		int localvar669 = (Xn.max() + -1);
-		int localvar672 = (Yn.max() + -1);
-		int localvar674 = std::min(localvar669,(localvar517 + localvar672));
-		 for(int i=localvar667;i<=localvar674;i++){
-		 	bool localvar675 = false;
-		 	if((X[i].assigned() && (Offset.assigned() && Y[(i + -Offset.val())].assigned()))){
-		 		localvar675 = (X[i].val() == Y[(i + -Offset.val())].val());
-		 	}else{
-		 		localvar675 = false;
-		 	}
-		 	naryvar11 = (naryvar11 && localvar675);
-		 } 
-		bool naryvar12 = true;
-		int localvar678 = std::max(localvar561,0);
-		int localvar686 = std::min(localvar672,(localvar556 + localvar669));
-		 for(int j=localvar678;j<=localvar686;j++){
-		 	bool localvar687 = false;
-		 	if((Offset.assigned() && (X[(j + Offset.val())].assigned() && Y[j].assigned()))){
-		 		localvar687 = (X[(j + Offset.val())].val() == Y[j].val());
-		 	}else{
-		 		localvar687 = false;
-		 	}
-		 	naryvar12 = (naryvar12 && localvar687);
-		 } 
-		if((((localvar674 < localvar667) || naryvar11) && ((localvar686 < localvar678) || naryvar12))){
-			return home.ES_SUBSUMED(*this);
-		} 
-	}
-	if(X.assigned()&&Xn.assigned()&&Y.assigned()&&Yn.assigned()&&Offset.assigned())return home.ES_SUBSUMED(*this);
-	return ES_FIX;
-}
-
-
-}//end of namespace OPEN_region_avvavvv
-
-/*
- functions used to post the constraint.
- generated.
-*/
-void OPEN_region(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Offset, IntConLevel icl=ICL_DEF){
-	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);
-	Int::IntView Offset(_Offset);
-	if(icl==ICL_BND) GECODE_ES_FAIL(OPEN_region_avvavvv::OPEN_region_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Offset));
-		else GECODE_ES_FAIL(OPEN_region_avvavvv::OPEN_region_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Offset));
-
-}
-void OPEN_region(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Offset, OPEN_region_avvavvv::Propag _prop){
-	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);
-	Int::IntView Offset(_Offset);	
-	if(_prop==OPEN_region_avvavvv::OPEN_region_avvavvv_gen) GECODE_ES_FAIL(OPEN_region_avvavvv::OPEN_region_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Offset));
-}
-
-
- 
-
-namespace OPEN_substr_avvavvv{
-
-OPEN_substr_avvavvv_genPropagator::OPEN_substr_avvavvv_genPropagator(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Index)
+Substring::Substring(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn, Int::IntView _Index)
 : Propagator(home), X(_X),Xn(_Xn),Y(_Y),Yn(_Yn),Index(_Index){
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].subscribe(home,*this,Int::PC_INT_BND);
@@ -707,14 +532,14 @@ OPEN_substr_avvavvv_genPropagator::OPEN_substr_avvavvv_genPropagator(Home home, 
 	 	Y[_i_].subscribe(home,*this,Int::PC_INT_BND);
 	 } 
 }
-OPEN_substr_avvavvv_genPropagator::OPEN_substr_avvavvv_genPropagator(Home home, bool share, OPEN_substr_avvavvv_genPropagator& p):Propagator(home, share, p){
+Substring::Substring(Home home, bool share, Substring& p):Propagator(home, share, p){
 	X.update(home,share,p.X);
 	Xn.update(home,share,p.Xn);
 	Y.update(home,share,p.Y);
 	Yn.update(home,share,p.Yn);
 	Index.update(home,share,p.Index);
 }
-size_t OPEN_substr_avvavvv_genPropagator::dispose(Space& home){
+size_t Substring::dispose(Space& home){
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].cancel(home,*this,Int::PC_INT_BND);
 	 } 
@@ -728,12 +553,12 @@ size_t OPEN_substr_avvavvv_genPropagator::dispose(Space& home){
 	return sizeof(*this);
 }
 
-ExecStatus OPEN_substr_avvavvv_genPropagator::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, Int::IntView Index){
+ExecStatus Substring::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn, Int::IntView Index){
 	//initial prop
-	(void) new (home) OPEN_substr_avvavvv_genPropagator(home,X, Xn, Y, Yn, Index);
+	(void) new (home) Substring(home,X, Xn, Y, Yn, Index);
 	return ES_OK;
 }
-ExecStatus OPEN_substr_avvavvv_genPropagator::propagate(Space& home, const Gecode::ModEventDelta& med){
+ExecStatus Substring::propagate(Space& home, const Gecode::ModEventDelta& med){
 	bool nafp = true;
 	while(nafp){
 		nafp = false;
@@ -756,10 +581,10 @@ ExecStatus OPEN_substr_avvavvv_genPropagator::propagate(Space& home, const Gecod
 			int localvar874 = (localvar866 + localvar761);
 			Iter::Ranges::NaryUnion naryvar13[localvar874+1];
 			 for(int i=0;i<=localvar874;i++){
-			 	Region region_naryvar13_i_(home);
+			 	Region r(home);
 			 	Iter::Ranges::Empty empty_naryvar13_i_;
 
-			 	naryvar13[i] = Iter::Ranges::NaryUnion(region_naryvar13_i_,empty_naryvar13_i_); 
+			 	naryvar13[i] = Iter::Ranges::NaryUnion(r,empty_naryvar13_i_); 
 			 	 for(int ii22=(i + (localvar754 + localvar865));ii22<=(i + (localvar754 + localvar744));ii22++){
 			 	 	Iter::Ranges::Singleton localvar968(Y[ii22].min(),Y[ii22].max()); 
 			 	 	naryvar13[i] |= localvar968;
@@ -785,10 +610,10 @@ ExecStatus OPEN_substr_avvavvv_genPropagator::propagate(Space& home, const Gecod
 			int localvar896 = (localvar887 + localvar801);
 			Iter::Ranges::NaryUnion naryvar14[localvar896+1];
 			 for(int j=0;j<=localvar896;j++){
-			 	Region region_naryvar14_j_(home);
+			 	Region r(home);
 			 	Iter::Ranges::Empty empty_naryvar14_j_;
 
-			 	naryvar14[j] = Iter::Ranges::NaryUnion(region_naryvar14_j_,empty_naryvar14_j_); 
+			 	naryvar14[j] = Iter::Ranges::NaryUnion(r,empty_naryvar14_j_); 
 			 	 for(int ii8=(j + (localvar793 + localvar743));ii8<=(j + (localvar793 + localvar753));ii8++){
 			 	 	Iter::Ranges::Singleton localvar983(X[ii8].min(),X[ii8].max()); 
 			 	 	naryvar14[j] |= localvar983;
@@ -843,7 +668,7 @@ ExecStatus OPEN_substr_avvavvv_genPropagator::propagate(Space& home, const Gecod
 }
 
 
-}//end of namespace OPEN_substr_avvavvv
+}}}//end of namespace OPEN_substr_avvavvv
 
 /*
  functions used to post the constraint.
@@ -856,17 +681,17 @@ void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn
 	ViewArray<Int::IntView> Y(home,_Y);
 	Int::IntView Yn(_Yn);
 	Int::IntView Index(_Index);
-	if(icl==ICL_BND) GECODE_ES_FAIL(OPEN_substr_avvavvv::OPEN_substr_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Index));
-		else GECODE_ES_FAIL(OPEN_substr_avvavvv::OPEN_substr_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Index));
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Substring::Substring::post(home,X, Xn, Y, Yn, Index));
+		else GECODE_ES_FAIL(Open::Substring::Substring::post(home,X, Xn, Y, Yn, Index));
 
 }
-void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, OPEN_substr_avvavvv::Propag _prop){
+void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, Open::Substring::Propag _prop){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
 	ViewArray<Int::IntView> Y(home,_Y);
 	Int::IntView Yn(_Yn);
 	Int::IntView Index(_Index);	
-	if(_prop==OPEN_substr_avvavvv::OPEN_substr_avvavvv_gen) GECODE_ES_FAIL(OPEN_substr_avvavvv::OPEN_substr_avvavvv_genPropagator::post(home,X, Xn, Y, Yn, Index));
+	if(_prop==Open::Substring::OPEN_substr_avvavvv_gen) GECODE_ES_FAIL(Open::Substring::Substring::post(home,X, Xn, Y, Yn, Index));
 }
  
