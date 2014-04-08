@@ -172,6 +172,9 @@ namespace Gecode { namespace Int { namespace Extensional {
      bool o_dec(int i, const Edge& e);
      /// Perform consistency check on data structures
      void audit(void);
+     /// Determine 'finality' of states in layers[i]
+     bool finalize(int i);
+     bool finalize(int i, int num_states);
      /// Add new layers to layered graph
      ExecStatus extend(Space& home);
      /// Initialize layered graph

@@ -290,7 +290,34 @@ namespace Gecode { namespace Int { namespace Extensional {
     assert(m_s <= max_states);
 #endif
   }
+  
+  template<class View, class Val, class Degree, class StateIdx>
+  forceinline bool
+    OpenLayeredGraph<View,Val,Degree,StateIdx>::finalize(int i, int num_states) {
+      mindist = length.max() + 1;
+      bool changed = false;
+      //assert(num_states <= layers[i].n_states);
+      for (int s=num_states; s--; ) {
+        if ((o_state(i-1,static_cast<StateIdx>(s)).i_deg != 0)
+            && (distance[dfa_map[s]] + i <= length.max())) {
+              o_state(i-1,static_cast<StateIdx>(s)).o_deg = 1;
+              mindist = std::min(mindist,distance[dfa_map[s]]);
+        } else {
+          if (o_state(i-1,static_cast<StateIdx>(s)).o_deg != 0) {
+            changed = true;
+          }
+          o_state(i-1,static_cast<StateIdx>(s)).o_deg = 0;
+        }
+      }
+      return changed;
+    }
 
+  template<class View, class Val, class Degree, class StateIdx>
+  forceinline bool
+    OpenLayeredGraph<View,Val,Degree,StateIdx>::finalize(int i) {
+      return finalize(i, layers[i].n_states);
+    }
+    
   template<class View, class Val, class Degree, class StateIdx>
   forceinline ExecStatus
     OpenLayeredGraph<View,Val,Degree,StateIdx>::extend(Space& home) {
@@ -373,16 +400,9 @@ namespace Gecode { namespace Int { namespace Extensional {
           return ES_FAILED;
       }
     // Mark states that are "close enough" to a dfa-final state
-    mindist = length.max() + 1;
-    for (int s=max_states; s--; ) {
-      if (o_state(length.min()-1,static_cast<StateIdx>(s)).i_deg != 0
-          && distance[s] + length.min() <= length.max()) {
-          o_state(length.min()-1,static_cast<StateIdx>(s)).o_deg = 1;
-          mindist = std::min(mindist,distance[s]);
-        }
-        else
-          o_state(length.min()-1,static_cast<StateIdx>(s)).o_deg = 0;
-      }
+      for (int i = max_states; i--; )
+        dfa_map[i] = i;
+      (void) finalize(length.min(), max_states);
       
     // Backward pass: prune all transitions that do not lead to final state
     n_edges = 0;
@@ -575,19 +595,7 @@ namespace Gecode { namespace Int { namespace Extensional {
 
     if (i == -1) {
       // advisor is for length, not for a layer
-      mindist = length.max() + 1;
-      bool fix = true;
-      for (int s=layers[n].n_states; s--; ) {
-        if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-            && distance[dfa_map[s]] + n <= length.max()) {
-              o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-              mindist = std::min(mindist,distance[dfa_map[s]]);
-        } else
-          if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0) {
-            fix = false;
-          }
-          o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
-      }
+      bool fix = !finalize(n);
       if(n + mindist > length.max())
         return ES_FAILED;
       
@@ -777,19 +785,7 @@ namespace Gecode { namespace Int { namespace Extensional {
     
     /// Update lower bound of length if
     /// there is no dfa-final state in layer[n]:
-    // Update the min distance to any final state   
-    mindist = length.max() + 1;
-    bool o_mod = false;
-    for (int s=layers[n].n_states; s--; ) {
-      if (o_state(n-1,static_cast<StateIdx>(s)).i_deg != 0
-          && distance[dfa_map[s]] + n <= length.max()) {
-            o_state(n-1,static_cast<StateIdx>(s)).o_deg = 1;
-            mindist = std::min(mindist,distance[dfa_map[s]]);
-      } else
-        if (o_state(n-1,static_cast<StateIdx>(s)).o_deg != 0)
-          o_mod = true;
-        o_state(n-1,static_cast<StateIdx>(s)).o_deg = 0;
-    }
+    bool o_mod = finalize(n);
     if (o_mod)
       o_ch.add(n-1);
     
