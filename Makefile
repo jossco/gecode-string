@@ -20,23 +20,23 @@ ifneq (,$(findstring clang,$(CXX)))
 override LDLIBS += -stdlib=libstdc++
 endif
 
-LINK_TARGET = 	\
-	revenant
-
-ALT_TARGETS = 	dfa2fst
+TARGETS = 	\
+	revenant \
+	dfa2fst \
+	equation1
 
 MODULES = \
 	open-layered-graph.o \
 	bounded-none.o \
 	open.o
 
-OBJS = $(patsubst %,%.o,$(LINK_TARGET)) $(patsubst %,%.o,$(ALT_TARGETS))
+OBJS = $(patsubst %,%.o,$(TARGETS)) 
 
-REBUILDABLES = $(OBJS) $(LINK_TARGET) $(MODULES) $(ALT_TARGETS)
+REBUILDABLES = $(OBJS) $(TARGETS) $(MODULES)
 
 build : all
 .PHONY : build
-all : $(LINK_TARGET)
+all : $(TARGETS)
 	@echo All done
 .PHONY : all
 
@@ -53,9 +53,7 @@ clean :
 	rm -f $(MODULES:.o=.d.*)
 	@echo Clean done
 	
-$(LINK_TARGET) : % : %.o $(MODULES)
-	$(CXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
-$(ALT_TARGETS) : % : %.o $(MODULES)
+$(TARGETS) : % : %.o $(MODULES)
 	$(CXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 # $@ for the pattern-matched target
