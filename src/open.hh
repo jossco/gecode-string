@@ -9,7 +9,26 @@ Please avoid modifying this file directly...
 
 using namespace Gecode;
 
- 
+ /*
+   TODO: restructure open.hh as a Gecode module
+
+  open.hh       specs for constraint post functions, branchers
+  open/
+    equal.hh    specs for equal propagator class
+    equal.cpp   implementation of constraint post functions
+    equal/
+      base.hpp  implementation of equal propagator class
+    
+    concat...
+    substring...
+    element...
+    
+    extensional.hh        spec of LayeredGraph
+    extensional.cpp       implementation of extensional constraint post functions
+    extensional/
+      layered-graph.hpp   impl of LayeredGraph
+      dfa.hpp             local subclass of Int::DFA
+ */
 #ifndef OPEN_PROPS_HH
 #define OPEN_PROPS_HH
 namespace Gecode { namespace Open { namespace CharacterAt {

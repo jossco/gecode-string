@@ -130,6 +130,22 @@ namespace Gecode { namespace Int { namespace Extensional {
        /// Return last position
        int lst(void) const;
      };
+     /*
+       TODO: subclass DFA
+     Instead of storing both a DFA and a bunch of stats on it,
+     subclass DFA (with a constructor that takes a DFA),
+     and store the stats internally.
+     Then this class doesn't rely on openFST.
+     protected:
+       StdVectorFst fst;        //  the openFST representation
+       IntSharedArray distance; //  shared among copies of the DFA, not copies of the propagator
+       void shortestDistance(); //  use openFST to calculate distance to final node
+     public:
+       int distance(int index);
+     
+       TODO: Add a 'reversed' view of the dfa
+       TODO: Consider reversing and distancing the DFA itself, and drop openFST
+     */
      /// The original DFA
      DFA dfa;
      /// The advisor council

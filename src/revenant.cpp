@@ -155,6 +155,9 @@ int main(int argc, char* argv[]) {
       }
     case Revenant::SEARCH_ITERATE:
       {
+        /*
+          TODO: subclass Script for iterative searching
+        */
         std::ofstream sol_file;
         std::ostream& s_out = select_ostream(opt.out_file(), sol_file);
         Support::Timer t;
