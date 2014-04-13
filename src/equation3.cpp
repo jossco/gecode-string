@@ -134,7 +134,6 @@ public:
   	    	rel(*this, (Z[i]==dummy_sym) == (n_z<=i));
   	    	rel(*this, (Y[i]==dummy_sym) == (n_y<=i));
   	    	rel(*this, (X[i]==dummy_sym) == (n_x<=i));
-  	    	rel(*this, (T[i]==dummy_sym) == (n_t<=i));
   	    }
 
   	    rel(*this, n_z == (n_x+n_t));
