@@ -23,7 +23,10 @@ endif
 TARGETS = 	\
 	revenant \
 	dfa2fst \
-	equation1
+	equation1 \
+	equation2 \
+	equation3 \
+	equation4
 
 MODULES = \
 	open-layered-graph.o \
@@ -36,7 +39,7 @@ REBUILDABLES = $(OBJS) $(TARGETS) $(MODULES)
 
 build : all
 .PHONY : build
-all : $(TARGETS)
+all : $(REBUILDABLES)
 	@echo All done
 .PHONY : all
 

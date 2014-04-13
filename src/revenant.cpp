@@ -27,9 +27,8 @@ class Revenant : public Script {
 private:
   IntVarArray A;
   IntVar N;
-  bool fixed;
 public:
-  enum {BRANCH_A_N, BRANCH_N_A, BRANCH_FILTER, BRANCH_BOUND, SEARCH_STATUS, SEARCH_ITERATE, SEARCH_DFS, PROP_OPEN, PROP_PAD, PROP_CLOSED};
+  enum {BRANCH_A_N, BRANCH_N_A, BRANCH_FILTER, BRANCH_BOUND, SEARCH_STATUS, SEARCH_ITERATE, SEARCH_DFS, PROP_OPEN, PROP_CLOSED, PROP_PAD};
   Revenant(const SizeOptions& opt) : 
     A(*this, wordlength, 0, 3),
     N(*this, 1, wordlength) {
@@ -45,30 +44,35 @@ public:
       DFA d2(lang2);
     
       switch(opt.propagation()) {
-        case PROP_CLOSED:
         case PROP_PAD:
-          fixed = true;
           extensional(*this, A, d1);
           extensional(*this, A, d2);
+          for (int i=0; i < wordlength; i++) {
+            rel(*this, (A[i]==0) == (N<=i));
+          }
+          break;
+        case PROP_CLOSED:
+          extensional(*this, A, d1);
+          extensional(*this, A, d2);
+          rel(*this, N==wordlength);
           break;
         case PROP_OPEN:
-          fixed = false;
           extensional(*this, A, d1, N);
           extensional(*this, A, d2, N);
           break;
       }
       switch(opt.branching()) {
         case BRANCH_N_A:
-          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_MIN());
+          if (opt.propagation() != PROP_CLOSED) branch(*this, N, INT_VAL_MIN());
           branch(*this, A, INT_VAR_NONE(), INT_VAL_MIN());
           break;
         case BRANCH_A_N:
           branch(*this, A, INT_VAR_NONE(), INT_VAL_MIN());
-          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_MIN());
+          if (opt.propagation() != PROP_CLOSED) branch(*this, N, INT_VAL_MIN());
           break;
         case BRANCH_FILTER:
           branch(*this, A, INT_VAR_NONE(), INT_VAL_MIN(), &filter);
-          if (opt.propagation() == PROP_OPEN) branch(*this, N, INT_VAL_MIN());
+          if (opt.propagation() != PROP_CLOSED) branch(*this, N, INT_VAL_MIN());
           break;
         case BRANCH_BOUND:
           boundednone(*this, A, N);
@@ -76,13 +80,13 @@ public:
       }
     }
   bool bounded(IntVar x, int i) const {
-    return fixed ? i < wordlength : i < N.min();
+    return i < N.min();
   }
   static bool filter(const Space& home, IntVar x, int i) {
     return static_cast<const Revenant&>(home).bounded(x,i);
   }
   Revenant(bool share, Revenant& s) :
-  Script(share,s), fixed(s.fixed) {
+  Script(share,s) {
     A.update(*this, share, s.A);
     N.update(*this, share, s.N);
   }
@@ -90,21 +94,15 @@ public:
     return new Revenant(share, *this);
   }
   virtual void print(std::ostream& os) const {
-    if (fixed) {
-      os << wordlength << " : [ ";
-      for (int i = 0; i < wordlength; i++)
+    os << N << " : [ ";
+    for (int i = 0; i < std::min(N.min(),A.size()); i++)
+      os << A[i];
+    if (!N.assigned()) {
+      os << "{";
+      for (int i = N.min(); i < std::min(A.size(),N.max()); i++)
         os << A[i];
-    } else {
-      os << N << " : [ ";
-      for (int i = 0; i < std::min(N.min(),A.size()); i++)
-        os << A[i];
-      if (!N.assigned()) {
-        os << "{";
-        for (int i = N.min(); i < std::min(A.size(),N.max()); i++)
-          os << A[i];
-        os << "}";
-      }
-    } 
+      os << "}";
+    }
     os << " ]" << std::endl;
   }
 };
@@ -136,6 +134,10 @@ int main(int argc, char* argv[]) {
   
   opt.parse(argc,argv);
   
+  if ((opt.propagation() == Revenant::PROP_CLOSED) && (opt.search()==Revenant::SEARCH_DFS)) {
+    std::cout << "Switching search to iterate over lengths" << std::endl;
+    opt.search(Revenant::SEARCH_ITERATE);
+  }
   switch(opt.search()) {
     case Revenant::SEARCH_STATUS:
       {

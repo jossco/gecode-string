@@ -10,8 +10,6 @@ Please avoid modifying this file directly...
 
 using namespace Gecode;
 
- 
-
 namespace Gecode { namespace Open { namespace CharacterAt {
 
 CharacterAt::CharacterAt(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, Int::IntView _C, Int::IntView _Index)
@@ -175,47 +173,47 @@ ExecStatus Concat::propagate(Space& home, const Gecode::ModEventDelta& med){
 		nafp = false;
 		int localvar41 = Xn.min();
 		int localvar42 = Yn.min();
-		GECODE_ME_CHECK_MODIFIED(nafp,Zn.gq(home,(localvar41 + localvar42)));
+		GECODE_ME_CHECK_MODIFIED(nafp,Zn.gq(home,(Xn.min() + Yn.min())));
 		int localvar44 = Xn.max();
 		int localvar45 = Yn.max();
-		GECODE_ME_CHECK_MODIFIED(nafp,Zn.lq(home,(localvar44 + localvar45)));
+		GECODE_ME_CHECK_MODIFIED(nafp,Zn.lq(home,(Xn.max() + Yn.max())));
 		int localvar47 = Zn.min();
-		GECODE_ME_CHECK_MODIFIED(nafp,Xn.gq(home,(localvar47 + -localvar45)));
+		GECODE_ME_CHECK_MODIFIED(nafp,Xn.gq(home,(Zn.min() - Yn.max())));
 		int localvar51 = Zn.max();
-		GECODE_ME_CHECK_MODIFIED(nafp,Xn.lq(home,(localvar51 + -localvar42)));
+		GECODE_ME_CHECK_MODIFIED(nafp,Xn.lq(home,(Zn.max() - Yn.min())));
 		int localvar57 = -localvar44;
-		GECODE_ME_CHECK_MODIFIED(nafp,Yn.gq(home,(localvar47 + localvar57)));
+		GECODE_ME_CHECK_MODIFIED(nafp,Yn.gq(home,(Zn.min() - Xn.max())));
 		int localvar61 = -localvar41;
-		GECODE_ME_CHECK_MODIFIED(nafp,Yn.lq(home,(localvar51 + localvar61)));
-		int localvar64 = (localvar47 + -1);
-		int localvar66 = (localvar41 + -1);
-		int localvar67 = std::min(localvar64,localvar66);
+		GECODE_ME_CHECK_MODIFIED(nafp,Yn.lq(home,(Zn.max() - Xn.min())));
+		int localvar64 = (Zn.min() - 1);
+		int localvar66 = (Xn.min() - 1);
+		int localvar67 = std::min(Zn.min(),Xn.min()) - 1;
 		if((0 <= localvar67)){
 			 for(int i=0;i<=localvar67;i++){
 			 	GECODE_ME_CHECK_MODIFIED(nafp,Z[i].gq(home,X[i].min()));
 			 	GECODE_ME_CHECK_MODIFIED(nafp,Z[i].lq(home,X[i].max()));
 			 	int localvar77 = X.size();
-			 	if(((i < 0) || (0 < (-localvar77 + (i + 1))))){
+			 	if(((i < 0) || (0 < (-X.size() + (i + 1))))){
 			 		return ES_FAILED;
 			 	} 
-			 	 for(int ii15=0;ii15<=(localvar77 + -1);ii15++){
-			 	 	if(((Z[i].max() < X[ii15].min()) || (X[ii15].max() < Z[i].min()))){
-			 	 		if((0 == (-ii15 + i))){
+			 	 for(int j=0;j<=(X.size() + -1);j++){
+			 	 	if(((Z[i].max() < X[j].min()) || (X[j].max() < Z[i].min()))){
+			 	 		if((0 == (i - j))){
 			 	 			return ES_FAILED;
 			 	 		} 
 			 	 	} 
 			 	 } 
 			 } 
 		} 
-		int localvar99 = std::min(localvar66,localvar64);
+		int localvar99 = std::min(Xn.min(),Zn.min());
 		if((0 <= localvar99)){
 			 for(int j=0;j<=localvar99;j++){
 			 	int localvar106 = Z.size();
 			 	int localvar107 = -j;
-			 	if((((localvar106 + (localvar107 + -1)) < 0) || (0 < localvar107))){
+			 	if((((Z.size() + (localvar107 + -1)) < 0) || (0 < localvar107))){
 			 		return ES_FAILED;
 			 	} 
-			 	 for(int ii9=0;ii9<=(localvar106 + -1);ii9++){
+			 	 for(int ii9=0;ii9<=(Z.size() + -1);ii9++){
 			 	 	if(((X[j].max() < Z[ii9].min()) || (Z[ii9].max() < X[j].min()))){
 			 	 		if((0 == (ii9 + localvar107))){
 			 	 			return ES_FAILED;
@@ -345,27 +343,21 @@ ExecStatus Concat::propagate(Space& home, const Gecode::ModEventDelta& med){
  functions used to post the constraint.
  generated.
 */
-void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, IntConLevel icl=ICL_DEF){
+void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, IntConLevel icl=ICL_DEF){
 	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);
-	ViewArray<Int::IntView> Z(home,_Z);
-	Int::IntView Zn(_Zn);
-	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
-		else GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
+  ViewArray<Int::IntView> X(home,_X);
+  ViewArray<Int::IntView> Y(home,_Y);
+  ViewArray<Int::IntView> Z(home,_Z);
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, _Xn, Y, _Yn, Z, _Zn));
+		else GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, _Xn, Y, _Yn, Z, _Zn));
 
 }
-void OPEN_concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, Open::Concat::Propag _prop){
+void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, Open::Concat::Propag _prop){
 	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);
-	ViewArray<Int::IntView> Z(home,_Z);
-	Int::IntView Zn(_Zn);	
-	if(_prop==Open::Concat::OPEN_concat_avvavvavv_gen) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, Xn, Y, Yn, Z, Zn));
+  ViewArray<Int::IntView> X(home,_X);
+  ViewArray<Int::IntView> Y(home,_Y);
+  ViewArray<Int::IntView> Z(home,_Z);
+	if(_prop==Open::Concat::OPEN_concat_avvavvavv_gen) GECODE_ES_FAIL(Open::Concat::Concat::post(home,X, _Xn, Y, _Yn, Z, _Zn));
 }
 
 
@@ -376,13 +368,13 @@ namespace Gecode { namespace Open { namespace Equal {
 Equal::Equal(Home home, ViewArray<Int::IntView> _X, Int::IntView _Xn, ViewArray<Int::IntView> _Y, Int::IntView _Yn)
 : Propagator(home), X(_X),Xn(_Xn),Y(_Y),Yn(_Yn){
 	Xn.subscribe(home,*this,Int::PC_INT_BND);
+  Yn.subscribe(home,*this,Int::PC_INT_BND);
 	 for(int _i_=0;_i_<=X.size()-1;_i_++){
 	 	X[_i_].subscribe(home,*this,Int::PC_INT_BND);
 	 } 
 	 for(int _i_=0;_i_<=Y.size()-1;_i_++){
 	 	Y[_i_].subscribe(home,*this,Int::PC_INT_BND);
 	 } 
-	Yn.subscribe(home,*this,Int::PC_INT_BND);
 }
 Equal::Equal(Home home, bool share, Equal& p):Propagator(home, share, p){
 	X.update(home,share,p.X);
@@ -405,6 +397,15 @@ size_t Equal::dispose(Space& home){
 
 ExecStatus Equal::post(Space& home, ViewArray<Int::IntView> X, Int::IntView Xn, ViewArray<Int::IntView> Y, Int::IntView Yn){
 	//initial prop
+  GECODE_ME_CHECK(Yn.lq(home,Y.size()));
+  GECODE_ME_CHECK(Xn.lq(home,X.size()));
+  if(!same(Yn,Xn)){
+    GECODE_ME_CHECK(Yn.lq(home,Xn.max()));
+    GECODE_ME_CHECK(Xn.lq(home,Yn.max()));
+    GECODE_ME_CHECK(Yn.gq(home,Xn.min()));
+    GECODE_ME_CHECK(Xn.gq(home,Yn.min()));
+  }
+  
 	(void) new (home) Equal(home,X, Xn, Y, Yn);
 	return ES_OK;
 }
@@ -498,23 +499,19 @@ ExecStatus Equal::propagate(Space& home, const Gecode::ModEventDelta& med){
  functions used to post the constraint.
  generated.
 */
-void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntConLevel icl=ICL_DEF){
+void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntConLevel icl=ICL_DEF){
 	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);
-	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
-		else GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
+  ViewArray<Int::IntView> X(home,_X);
+  ViewArray<Int::IntView> Y(home,_Y);
+	if(icl==ICL_BND) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, _Xn, Y, _Yn));
+		else GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, _Xn, Y, _Yn));
 
 }
-void OPEN_equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, Open::Equal::Propag _prop){
+void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, Open::Equal::Propag _prop){
 	if(home.failed())return;
-	ViewArray<Int::IntView> X(home,_X);
-	Int::IntView Xn(_Xn);
-	ViewArray<Int::IntView> Y(home,_Y);
-	Int::IntView Yn(_Yn);	
-	if(_prop==Open::Equal::OPEN_equal_avvavv_gen) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, Xn, Y, Yn));
+  ViewArray<Int::IntView> X(home,_X);
+  ViewArray<Int::IntView> Y(home,_Y);
+	if(_prop==Open::Equal::OPEN_equal_avvavv_gen) GECODE_ES_FAIL(Open::Equal::Equal::post(home,X, _Xn, Y, _Yn));
 }
 
 
@@ -674,7 +671,7 @@ ExecStatus Substring::propagate(Space& home, const Gecode::ModEventDelta& med){
  functions used to post the constraint.
  generated.
 */
-void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, IntConLevel icl=ICL_DEF){
+void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, IntConLevel icl=ICL_DEF){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);
@@ -685,7 +682,7 @@ void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn
 		else GECODE_ES_FAIL(Open::Substring::Substring::post(home,X, Xn, Y, Yn, Index));
 
 }
-void OPEN_substr(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, Open::Substring::Propag _prop){
+void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, Open::Substring::Propag _prop){
 	if(home.failed())return;
 	ViewArray<Int::IntView> X(home,_X);
 	Int::IntView Xn(_Xn);

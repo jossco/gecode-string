@@ -61,6 +61,7 @@ enum Propag {OPEN_char_avvvv_gen};
  functions used to post the constraint.
  generated.
 */
+//void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index);
 void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, IntConLevel icl);
 void characterat(Home home, IntVarArgs _X, IntVar _Xn, IntVar _C, IntVar _Index, Open::CharacterAt::Propag _prop);
 
@@ -96,6 +97,7 @@ enum Propag {OPEN_concat_avvavvavv_gen};
  functions used to post the constraint.
  generated.
 */
+//void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn);
 void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, IntConLevel icl);
 void concat(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVarArgs _Z, IntVar _Zn, Open::Concat::Propag _prop);
 
@@ -129,6 +131,7 @@ enum Propag {OPEN_equal_avvavv_gen};
  functions used to post the constraint.
  generated.
 */
+//void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn);
 void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntConLevel icl);
 void equal(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, Open::Equal::Propag _prop);
 
@@ -163,6 +166,7 @@ enum Propag {OPEN_substr_avvavvv_gen};
  functions used to post the constraint.
  generated.
 */
+//void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index);
 void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, IntConLevel icl);
 void substring(Home home, IntVarArgs _X, IntVar _Xn, IntVarArgs _Y, IntVar _Yn, IntVar _Index, Open::Substring::Propag _prop);
 #endif
