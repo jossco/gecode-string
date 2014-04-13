@@ -83,7 +83,7 @@ public:
     switch(opt.propagation()){
       case PROP_OPEN:
         extensional(*this, X, myDFA_x, n_x);
-    		for(int i=n; i<2*n; i++)
+    		for(int i=n; i<2*n && i < X.size(); i++)
     		{
     			tempVar << X[i];
     		}
@@ -91,7 +91,7 @@ public:
         break;
       case PROP_CLOSED:
         extensional(*this, X, myDFA_x);
-    		for(int i=n; i<2*n; i++)
+    		for(int i=n; i<2*n && i<X.size(); i++)
     		{
     			tempVar << X[i];
     		}
@@ -99,7 +99,7 @@ public:
         break;
       case PROP_PAD:
         extensional(*this, X, myDFA_x);
-    		for(int i=n; i<2*n; i++)
+    		for(int i=n; i<2*n && i < X.size(); i++)
     		{
     			tempVar << X[i];
     		}
