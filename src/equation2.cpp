@@ -90,6 +90,7 @@ public:
   	    extensional(*this, tempVar, myDFA_a);
         break;
       case PROP_CLOSED:
+        rel(*this, n_x>=2*n);
         extensional(*this, X, myDFA_x);
     		for(int i=n; i<2*n && i<X.size(); i++)
     		{
