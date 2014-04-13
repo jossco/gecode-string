@@ -47,6 +47,10 @@ all : $(REBUILDABLES)
 debug : CXXFLAGS += -g -g3
 debug : all
 
+.PHONY : opt
+opt : CXXFLAGS += -O3
+opt : all
+
 .PHONY : clean
 clean :
 	rm -f $(REBUILDABLES)
