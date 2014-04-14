@@ -96,20 +96,20 @@ public:
     switch(opt.propagation()){
       case PROP_OPEN:
         extensional(*this, Z, myDFA_z, n_z);
-  	    concat(*this, X, n_x, T, n_t, Z, n_z, ICL_BND);
-        // rel(*this, n_z == (n_x+n_t));
-        // 
-        // for(int i=0; i<wordlength; i++)
-        // {
-        //   rel(*this, (i<n_x) >> (X[i]==Z[i]));
-        // 
-        //   BoolVar b = expr(*this, i==n_x);
-        // 
-        //   for(int j=0; (i+j)<wordlength; j++)
-        //   {
-        //     rel(*this, (b&&(j<n_t)) >> (T[j]==Z[i+j]));
-        //   }
-        // }
+  	    //concat(*this, X, n_x, T, n_t, Z, n_z, ICL_BND);
+        rel(*this, n_z == (n_x+n_t));
+        
+        for(int i=0; i<wordlength; i++)
+        {
+          rel(*this, (i<n_x) >> (X[i]==Z[i]));
+        
+          BoolVar b = expr(*this, i==n_x);
+        
+          for(int j=0; (i+j)<wordlength; j++)
+          {
+            rel(*this, (b&&(j<n_t)) >> (T[j]==Z[i+j]));
+          }
+        }
         break;
       case PROP_CLOSED:
         extensional(*this, Z, myDFA_z);
