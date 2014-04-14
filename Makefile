@@ -26,7 +26,8 @@ TARGETS = 	\
 	equation1 \
 	equation2 \
 	equation3 \
-	equation4
+	equation4 \
+	equation5
 
 MODULES = \
 	open-layered-graph.o \
