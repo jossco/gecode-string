@@ -1,7 +1,7 @@
-GECODE_BASE = /Users/joe/local/gecode-4.2.0
+GECODE_BASE = /usr/local/
 GECODE_INCL = $(GECODE_BASE)/include
 SRCDIR = src
-CXX = g++-4.8
+CXX = g++
 override CXXFLAGS += -I$(SRCDIR) -I$(GECODE_INCL)
 GIST = true
 LDFLAGS = -L$(GECODE_BASE)/lib
@@ -14,8 +14,9 @@ LDLIBS += \
 	-lgecodeminimodel\
 	-lgecodeint \
 	-lgecodekernel \
-	-lgecodesupport \
-	-lfst
+	-lgecodesupport
+#LDLIBS += -ldl 
+LDLIBS += -lfst
 ifneq (,$(findstring clang,$(CXX)))
 override LDLIBS += -stdlib=libstdc++
 endif

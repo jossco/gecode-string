@@ -1,3 +1,13 @@
+/*
+Author:   Joseph D. Scott
+          Uppsala University
+
+Used in:
+          "On Constraint Solving with String Variables"
+          Scott, J.D., Flener, P. and Pearson, J.
+          submitted to CP 2014
+
+*/
 #ifndef BOUNDED_NONE_HH
 #define BOUNDED_NONE_HH
 

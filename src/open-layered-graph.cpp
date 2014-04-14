@@ -1,3 +1,24 @@
+/*
+* open-layered-graph.cpp
+
+Propagator for Regular(X,L), where X is an array and L an integer length,
+based on:
+          "Open Constraints in a Boundable World"
+          Maher, M.J.
+          CPAIOR 2009, LNCS 5547, pp. 163-177. Springer.
+
+The code was modifed from the Gecode fixed-length implementation,
+Gecode::Int::extensional::layered-graph.hpp
+
+Author:   Joseph D. Scott
+          Uppsala University
+
+Used in:
+          "On Constraint Solving with String Variables"
+          Scott, J.D., Flener, P. and Pearson, J.
+          submitted to CP 2014
+*/
+
 #include <open-layered-graph.hh>
 #include <climits>
 #include <algorithm>

@@ -1,9 +1,14 @@
 /*
- * reg2gecode.cpp
- *
- *  Created on: Aug 13, 2012
- *      Author: jun
- */
+Author:   Joseph D. Scott
+          Uppsala University
+
+Used in:
+          "On Constraint Solving with String Variables"
+          Scott, J.D., Flener, P. and Pearson, J.
+          submitted to CP 2014
+
+Constraint model by Jun He
+*/
 
 #include <time.h>
 #include <math.h>

@@ -1,3 +1,12 @@
+/*
+Author:   Joseph D. Scott
+          Uppsala University
+
+Used in:
+          "On Constraint Solving with String Variables"
+          Scott, J.D., Flener, P. and Pearson, J.
+          submitted to CP 2014
+*/
 #include <gecode/driver.hh>
 #include <gecode/int.hh>
 #include <gecode/minimodel.hh>
