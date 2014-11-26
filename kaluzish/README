@@ -1,0 +1,14 @@
+kaluzish - kaluza to minizinc translation
+
+The kaluzish python script parses a kaluza input file and generates a minizinc model.
+For usage:
+  kaluzish --help
+
+Requires the pyparsing module:
+  easy_install pyparsing
+
+Requires MiniZinc 2.0
+
+To run the generated minizinc file in gecode (assuming you have gecode and minizinc, and your path is set correctly):
+  mzn-gecode -Ilibdir -D "wordlen=xx" example.mzn
+where 'libdir' is the path to the kaluzish/mznlib directory, and 'xx' is the upper bound on string lengths.

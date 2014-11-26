@@ -1,0 +1,59 @@
+Instructions for installing the Kaluza binary intended for Ubuntu 9.x,
+on Ubuntu 14.x
+
+I've only tested this on a 32-bit install.
+
+requires:
+  ant
+  ocaml
+  g++
+  openjdk-6-jdk
+
+1) In KaluzaBin/hampi/configure, change this line:
+
+    export JAVA_INCLUDE_PATH=/usr/lib/jvm/java-6-openjdk-i386/include/
+
+2) Build zchaff:
+    (Do not 'make all'!! Some of the extra utilities won't compile any longer.)
+    (The included version of zchaff seems to have an added Ocaml wrapper, which CFGanalyzer requires.)
+    
+    cd KaluzaBin/hampi/lib/cfganalyzer-2007-12-03/zchaff-src
+    make
+    cd ..
+    
+3) Build CFGanalyzer:
+   (this only works for the included version; in newer versions, linking to zchaff os different)
+   
+    cd KaluzaBin/hampi/lib/cfganalyzer-2007-12-03
+    edit Makefile:	
+      - comment out zchaff-src rule
+      - ZCHAFF-INST-DIR=zchaff-src
+    make depend
+    make
+    cd ..
+    
+4) Build Java bridge for STP:
+
+    cd stp-jni
+    (export JAVA_HOME='/usr/lib/jvm/java-6-openjdk-i386/jre')
+    edit Makefile:
+      - change hard-coded java include directories in all32/all64
+      
+5) Build hampi:
+
+    cd KaluzaBin/hampi
+    ./configure
+    make
+    
+6) Download yices binary:
+   (1.0.27 is recommended; 1.0.40 appears to work, as well)
+   
+    cd KaluzaBin
+    download:	
+      http://yices.csl.sri.com/cgi-bin/yices-newlicense.cgi?file=yices-1.0.27-i686-pc-linux-gnu-static-gmp.tar.gz	
+    tar -xfz yices-1.0.27-i686-pc-linux-gnu-static-gmp.tar.gz
+
+7) Test it:
+
+    export KALUZABIN=`pwd`
+    ./RunKal.sh SATKaluzaRegTests/substr.readable var_0xINPUT_2

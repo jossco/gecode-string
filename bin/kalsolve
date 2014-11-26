@@ -1,0 +1,53 @@
+#!/bin/bash
+
+WORDLEN=30
+FILENUM=1
+OUTFILE="len${WORDLEN}-${FILENUM}.tab"
+GEN_OUTFILE="true"
+
+while getopts "l:o:" Option
+do
+    case $Option in
+	l ) WORDLEN=$OPTARG;;
+	o ) OUTFILE=$OPTARG
+	    GEN_OUTFILE="false";;
+    esac
+done
+shift $(($OPTIND - 1))
+
+#if [ "$BOUNDED" = 'true' ]; then
+#    MZN_CMD="mzn-gecode-string"
+#else
+#    MZN_CMD="mzn-gecode"
+#fi
+
+if [ "$GEN_OUTFILE" = "true" ]; then
+    until [ ! -e "$OUTFILE" ]; do
+	echo "$OUTFILE already exists..."
+	FILENUM=$(($FILENUM+1))
+	OUTFILE="len${WORDLEN}-${FILENUM}.tab"
+    done
+fi
+until [ -z "$1" ]; do
+        echo $1
+	mzn-gecode-string -D "wordlen=${WORDLEN}" -s $1 | tee results.temp
+	line=1
+	RES=$1
+	last=`wc -l results.temp | awk '{print $1;}'`
+	while read one two three four; do
+		case "$line" in
+			1 ) SOL="$one";;
+		        2 ) ;;
+			3 ) NUM=`echo $four | sed -e 's/(\([^)]* ms\))/\1/'`
+			    RES="$RES    $NUM";;
+		        4 ) NUM=`echo $four | sed -e 's/(\([^)]* ms\))/\1/'`
+			    RES="$RES    $NUM";;
+			"$last" ) RES="$RES    $four";;
+			* )	RES="$RES    $three";;
+		esac
+		line=$(($line+1))
+	done < results.temp
+	echo "$RES    $SOL" >> $OUTFILE
+	echo "======================================="
+	shift
+done

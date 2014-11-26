@@ -14,10 +14,12 @@ Author:   Joseph D. Scott
           Uppsala University
 
 Used in:
-          "On Constraint Solving with String Variables"
+          "Constraint Solving with Bounded String Variables"
           Scott, J.D., Flener, P. and Pearson, J.
-          submitted to CP 2014
+          submitted to CPAIOR 2015
+
 */
+
 
 #ifndef __GECODE_OPEN_LG_HH__
 #define __GECODE_OPEN_LG_HH__
@@ -167,10 +169,10 @@ namespace Gecode { namespace Int { namespace Extensional {
        TODO: Add a 'reversed' view of the dfa
        TODO: Consider reversing and distancing the DFA itself, and drop openFST
      */
-     /// The original DFA
-     DFA dfa;
      /// The advisor council
      Council<Index> c;
+     /// The original DFA
+     DFA dfa;
      /// Number of layers (and views)
      int n;
      /// The bounded length

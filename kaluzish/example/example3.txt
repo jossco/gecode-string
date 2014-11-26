@@ -1,0 +1,8 @@
+var_0xINPUT_2 := T0_1 . T1_1;
+T0_1 \notin CapturedBrack(/["']/, 0);
+T1_1 := T2_1 . T3_1;
+PCTEMP_LHS_1 == Len(T0_1);
+T2_1 \in CapturedBrack(/["']/, 0);
+0x0 < Len(T2_1);
+T_2 :=PCTEMP_LHS_1 == 0x6;
+ASSERT (T_2);

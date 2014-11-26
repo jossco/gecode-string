@@ -1,2 +1,9 @@
 *.o
 *.d
+*.d.*
+.settings/
+example/*
+!*.cpp
+!*.hh
+!Makefile
+autom4te.cache/

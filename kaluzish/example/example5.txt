@@ -1,0 +1,12 @@
+I0_1 := 0x5 - 0x0;
+0x0 >= 0x0;
+0x5 >= 0x0;
+0x5 <= I1_1;
+I2_1 == I1_1;
+I0_1 == Len(PCTEMP_LHS_1);
+var_0xINPUT_2 := T1_1 . T2_1;
+T2_1 := PCTEMP_LHS_1 . T3_1;
+0x0 == Len(T1_1);
+I1_1 == Len(var_0xINPUT_2);
+T_2 :=PCTEMP_LHS_1 != "hello";
+ASSERT (T_2);

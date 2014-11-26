@@ -1,0 +1,16 @@
+#!/bin/bash
+
+FLAGS=
+while getopts "b" Option
+do
+    case $Option in
+	b ) FLAGS="${FLAGS} -b";;
+    esac
+done
+shift $(($OPTIND - 1))
+
+until [ -z "$1" ]; do
+    echo "$1"
+    $KALUZISH_DIR/kaluzish.py $FLAGS -f "$1"
+    shift
+done

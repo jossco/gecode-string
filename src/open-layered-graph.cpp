@@ -14,12 +14,13 @@ Author:   Joseph D. Scott
           Uppsala University
 
 Used in:
-          "On Constraint Solving with String Variables"
+          "Constraint Solving with Bounded String Variables"
           Scott, J.D., Flener, P. and Pearson, J.
-          submitted to CP 2014
+          submitted to CPAIOR 2015
+
 */
 
-#include <open-layered-graph.hh>
+#include "open-layered-graph.hh"
 #include <climits>
 #include <algorithm>
 #include <fst/fstlib.h>
@@ -280,13 +281,14 @@ namespace Gecode { namespace Int { namespace Extensional {
                                                        const VarArgArray<Var>& x, 
                                                        const DFA& dfa,
                                                        Int::IntView length)
-    : Propagator(home), c(home), n(0), 
+    : Propagator(home), c(home), 
+      dfa(dfa),
+      n(0),
+      length(length),
       max_states(static_cast<StateIdx>(dfa.n_states())),
       n_states(0),
-      n_edges(0),
-      dfa(dfa),
-      length(length) {
-    assert(length.max() > 0);
+      n_edges(0) {
+          assert(length.max() > 0);
     //home.notice(*this, AP_DISPOSE);
   }
 
@@ -909,9 +911,9 @@ namespace Gecode { namespace Int { namespace Extensional {
   ::OpenLayeredGraph(Space& home, bool share,
                  OpenLayeredGraph<View,Val,Degree,StateIdx>& p)
     : Propagator(home,share,p), 
-      n(p.n), layers(home.alloc<Layer>(p.length.max()+1)),
-      max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges),
-      mindist(p.mindist) {
+      n(p.n), mindist(p.mindist),
+      layers(home.alloc<Layer>(p.length.max()+1)),
+      max_states(p.max_states), n_states(p.n_states), n_edges(p.n_edges) {
     c.update(home,share,p.c);
     length.update(home,share,p.length);
     dfa.update(home,share,p.dfa);

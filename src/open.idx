@@ -1,0 +1,70 @@
+op inter infix 50 assoc set;
+
+// constraints on individual bound pairs
+def p_region(vint[] X, vint Xn, vint[]Y, vint Yn, vint Offset){
+	checker{
+		((max({min(rng(X)), min(rng(Y)) + val(Offset)}) > min({(min(rng(X)) + (val(Xn)) - 1), (min(rng(Y)) + val(Offset)) + (val(Yn) - 1)})) 
+		or
+		and(i in max({min(rng(X)), min(rng(Y)) + val(Offset)}) .. min({(min(rng(X)) + (val(Xn)) - 1), (min(rng(Y)) + val(Offset)) + (val(Yn) - 1)}))
+			(val(X[i])==val(Y[i - val(Offset)]))
+		) and (
+		(max({min(rng(Y)), min(rng(X)) - val(Offset)}) > min({min(rng(Y)) + (val(Yn) - 1), (min(rng(X)) - val(Offset)) + (val(Xn) - 1)}))
+		or
+		and(j in max({min(rng(Y)), min(rng(X)) - val(Offset)}) .. min({min(rng(Y)) + (val(Yn) - 1), (min(rng(X)) - val(Offset)) + (val(Xn) - 1)}))
+			(val(X[j + val(Offset)])==val(Y[j]))
+		)
+	}
+}
+
+def open_invariant(vint[] X, vint Xn){
+  checker{
+    and(i in min({val(Xn), max(rng(X))}) .. max(rng(X)))
+      (val(X[i])==(-1))
+  }
+}
+// String Constraints
+def open_equal(vint[] X, vint Xn, vint[] Y, vint Yn){
+	checker{
+			val(Xn)  == val(Yn)
+			and check(p_region(X,Xn,Y,Yn,0))	
+	}
+
+}
+
+def open_nequal(vint[] X, vint Xn, vint[] Y, vint Yn){
+  checker{
+    val(Xn) != val(Yn)
+    or
+    or(i in max({min(rng(X)), min(rng(Y))}) .. min({min({max(rng(X)),val(Xn)}),min({max(rng(Y)),val(Yn)})}))
+    (val(X[i]) != val(Y[i]))
+  }
+
+}
+
+def open_concat(vint[] X, vint Xn, vint[] Y, vint Yn, vint[] Z, vint Zn) {
+	checker{
+		val(Zn) == val(Xn) + val(Yn)
+		and check(p_region(Z,Zn,X,Xn,0))
+		and check(p_region(Z,Zn,Y,Yn,Xn))
+	}
+}
+def open_substring(vint[] X, vint Xn, vint[] Y, vint Yn, vint Index) {
+	checker {
+		val(Xn) >= val(Yn) + val(Index)
+		and check(p_region(X,Xn,Y,Yn,Index))
+	}
+}
+
+def open_characterat(vint[] X, vint Xn, vint C, vint Index){
+	checker{
+		val(Index) memberof (0 .. val(Xn))
+		and val(X[val(Index)]) == val(C) 
+	}
+	
+}
+
+def open_length(vint[] X, vint Xn, vint L){
+  checker{
+    val(L)==val(Xn)
+  }
+}

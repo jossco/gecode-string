@@ -1,0 +1,245 @@
+def open_characterat(vint[] X, vint Xn, vint C, vint Index){
+	checker{
+		((val(Index) <= val(Xn) and 0 <= val(Index)) and val(C) == val(X[val(Index)]))
+	}
+	propagator(gen)::DR{
+		Index in inf .. max(Xn);
+		Xn in min(Index) .. sup;
+		Index in 0 .. sup;
+		C in union(ii2 in dom(Index))(dom(X[ii2]));
+		X[val(Index)] in dom(C);
+		Index in rng(X);
+		forall(ii0 in rng(X)){
+			(dom(X[ii0]) inter dom(C)) == emptyset -> Index in (U minus {ii0}); 
+		}
+	}
+}
+
+def open_concat(vint[] X, vint Xn, vint[] Y, vint Yn, vint[] Z, vint Zn){
+	checker{
+		((val(Zn) == (val(Xn) + val(Yn)) and ((min({((min(rng(Z)) + val(Zn)) + -1),(((min(rng(X)) + 0) + val(Xn)) + -1)}) < max({min(rng(Z)),(min(rng(X)) + 0)}) or and(i in (max({min(rng(Z)),(min(rng(X)) + 0)}) .. min({((min(rng(Z)) + val(Zn)) + -1),(((min(rng(X)) + 0) + val(Xn)) + -1)})))(val(Z[i]) == val(X[(i + -0)]))) and (min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Z)) + -0) + val(Zn)) + -1)}) < max({min(rng(X)),(min(rng(Z)) + -0)}) or and(j in (max({min(rng(X)),(min(rng(Z)) + -0)}) .. min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Z)) + -0) + val(Zn)) + -1)})))(val(Z[(j + 0)]) == val(X[j]))))) and ((min({((min(rng(Z)) + val(Zn)) + -1),(((min(rng(Y)) + val(Xn)) + val(Yn)) + -1)}) < max({min(rng(Z)),(min(rng(Y)) + val(Xn))}) or and(i in (max({min(rng(Z)),(min(rng(Y)) + val(Xn))}) .. min({((min(rng(Z)) + val(Zn)) + -1),(((min(rng(Y)) + val(Xn)) + val(Yn)) + -1)})))(val(Z[i]) == val(Y[(i + -val(Xn))]))) and (min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(Z)) + -val(Xn)) + val(Zn)) + -1)}) < max({min(rng(Y)),(min(rng(Z)) + -val(Xn))}) or and(j in (max({min(rng(Y)),(min(rng(Z)) + -val(Xn))}) .. min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(Z)) + -val(Xn)) + val(Zn)) + -1)})))(val(Z[(j + val(Xn))]) == val(Y[j])))))
+	}
+	propagator(gen)::DR{
+		Zn in (min(Xn) + min(Yn)) .. (max(Xn) + max(Yn));
+		Xn in (min(Zn) + -max(Yn)) .. (max(Zn) + -min(Yn));
+		Yn in (min(Zn) + -max(Xn)) .. (max(Zn) + -min(Xn));
+		once(max({min(rng(Z)),min(rng(X))}) <= min({((min(rng(Z)) + min(Zn)) + -1),((min(rng(X)) + min(Xn)) + -1)})){
+			forall(i in (max({min(rng(Z)),min(rng(X))}) .. min({((min(rng(Z)) + min(Zn)) + -1),((min(rng(X)) + min(Xn)) + -1)}))){
+				X[i] in dom(Z[i]);
+				Z[i] in dom(X[i]);
+			}
+		} 
+		once(or(i in (max({min(rng(Z)),min(rng(X))}) .. min({((min(rng(Z)) + min(Zn)) + -1),((min(rng(X)) + min(Xn)) + -1)})))((dom(X[i]) inter dom(Z[i])) == emptyset)){
+			(max({min(rng(Z)),min(rng(X))}) + -1) < ((min(rng(X)) + min(Xn)) + -1) -> Zn in inf .. (max({min(rng(Z)),min(rng(X))}) + max(-rng(Z))); 
+			(max({min(rng(Z)),min(rng(X))}) + -1) < ((min(rng(Z)) + min(Zn)) + -1) -> Xn in inf .. (max({min(rng(Z)),min(rng(X))}) + max(-rng(X))); 
+		} 
+		once(max({min(rng(X)),min(rng(Z))}) <= min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Z)) + min(Zn)) + -1)})){
+			forall(j in (max({min(rng(X)),min(rng(Z))}) .. min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Z)) + min(Zn)) + -1)}))){
+				X[j] in dom(Z[j]);
+				Z[j] in dom(X[j]);
+			}
+		} 
+		once(or(j in (max({min(rng(X)),min(rng(Z))}) .. min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Z)) + min(Zn)) + -1)})))((dom(X[j]) inter dom(Z[j])) == emptyset)){
+			(max({min(rng(X)),min(rng(Z))}) + -1) < ((min(rng(Z)) + min(Zn)) + -1) -> Xn in inf .. (max({min(rng(X)),min(rng(Z))}) + max(-rng(X))); 
+			(max({min(rng(X)),min(rng(Z))}) + -1) < ((min(rng(X)) + min(Xn)) + -1) -> Zn in inf .. (max({min(rng(X)),min(rng(Z))}) + max(-rng(Z))); 
+		} 
+		once(max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) <= min({((min(rng(Z)) + min(Zn)) + -1),(((min(rng(Y)) + min(Xn)) + min(Yn)) + -1)})){
+			forall(i in (max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) .. min({((min(rng(Z)) + min(Zn)) + -1),(((min(rng(Y)) + min(Xn)) + min(Yn)) + -1)}))){
+				Y[(i + -val(Xn))] in dom(Z[i]);
+				Xn in (-rng(Y) + {i});
+				forall(ii19 in rng(Y)){
+					(dom(Y[ii19]) inter dom(Z[i])) == emptyset -> Xn in (U minus {(-ii19 + i)}); 
+				}
+				Z[i] in union(ii18 in ({i} + -dom(Xn)))(dom(Y[ii18]));
+			}
+		} 
+		once(or(i in (max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) .. min({((min(rng(Z)) + min(Zn)) + -1),(((min(rng(Y)) + min(Xn)) + min(Yn)) + -1)})))((union(ii14 in ({i} + -dom(Xn)))(dom(Y[ii14])) inter dom(Z[i])) == emptyset)){
+			(max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) + -1) < (((min(rng(Y)) + min(Xn)) + min(Yn)) + -1) -> Zn in inf .. (max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) + max(-rng(Z))); 
+			once((max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) + -1) < ((min(rng(Z)) + min(Zn)) + -1)){
+				Xn in inf .. ((max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) + max(-rng(Y))) + -min(Yn));
+				Yn in inf .. ((max({min(rng(Z)),(min(rng(Y)) + max(Xn))}) + max(-rng(Y))) + -min(Xn));
+			} 
+			min(rng(Z)) <= min({((min(rng(Z)) + min(Zn)) + -1),(((min(rng(Y)) + min(Xn)) + min(Yn)) + -1)}) -> Xn in ((min({((min(rng(Z)) + min(Zn)) + -1),(((min(rng(Y)) + min(Xn)) + min(Yn)) + -1)}) + max(-rng(Y))) + 1) .. sup; 
+		} 
+		once(max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(Z)) + -max(Xn)) + min(Zn)) + -1)})){
+			forall(j in (max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(Z)) + -max(Xn)) + min(Zn)) + -1)}))){
+				Y[j] in union(ii12 in ({j} + dom(Xn)))(dom(Z[ii12]));
+				Z[(j + val(Xn))] in dom(Y[j]);
+				Xn in (rng(Z) + {-j});
+				forall(ii5 in rng(Z)){
+					(dom(Z[ii5]) inter dom(Y[j])) == emptyset -> Xn in (U minus {(ii5 + -j)}); 
+				}
+			}
+		} 
+		once(or(j in (max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(Z)) + -max(Xn)) + min(Zn)) + -1)})))((dom(Y[j]) inter union(ii3 in ({j} + dom(Xn)))(dom(Z[ii3]))) == emptyset)){
+			(max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) + -1) < (((min(rng(Z)) + -max(Xn)) + min(Zn)) + -1) -> Yn in inf .. (max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) + max(-rng(Y))); 
+			once((max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) + -1) < ((min(rng(Y)) + min(Yn)) + -1)){
+				Xn in ((min({max(-rng(Y)),(max(-rng(Z)) + min(Xn))}) + min(rng(Z))) + min(Zn)) .. sup;
+				Zn in inf .. ((max({min(rng(Y)),(min(rng(Z)) + -min(Xn))}) + max(-rng(Z))) + max(Xn));
+			} 
+			min(rng(Y)) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(Z)) + -max(Xn)) + min(Zn)) + -1)}) -> Xn in inf .. ((max({((max(-rng(Y)) + -min(Yn)) + 1),(((max(-rng(Z)) + max(Xn)) + -min(Zn)) + 1)}) + min(rng(Z))) + -1); 
+		} 
+	}
+}
+
+def open_equal(vint[] X, vint Xn, vint[] Y, vint Yn){
+	checker{
+		(val(Xn) == val(Yn) and ((min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + 0) + val(Yn)) + -1)}) < max({min(rng(X)),(min(rng(Y)) + 0)}) or and(i in (max({min(rng(X)),(min(rng(Y)) + 0)}) .. min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + 0) + val(Yn)) + -1)})))(val(X[i]) == val(Y[(i + -0)]))) and (min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -0) + val(Xn)) + -1)}) < max({min(rng(Y)),(min(rng(X)) + -0)}) or and(j in (max({min(rng(Y)),(min(rng(X)) + -0)}) .. min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -0) + val(Xn)) + -1)})))(val(X[(j + 0)]) == val(Y[j])))))
+	}
+	propagator(gen)::DR{
+		Xn in min(Yn) .. max(Yn);
+		Yn in min(Xn) .. max(Xn);
+		once(max({min(rng(X)),min(rng(Y))}) <= min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Y)) + min(Yn)) + -1)})){
+			forall(i in (max({min(rng(X)),min(rng(Y))}) .. min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Y)) + min(Yn)) + -1)}))){
+				X[i] in dom(Y[i]);
+				Y[i] in dom(X[i]);
+			}
+		} 
+		once(or(i in (max({min(rng(X)),min(rng(Y))}) .. min({((min(rng(X)) + min(Xn)) + -1),((min(rng(Y)) + min(Yn)) + -1)})))((dom(X[i]) inter dom(Y[i])) == emptyset)){
+			(max({min(rng(X)),min(rng(Y))}) + -1) < ((min(rng(Y)) + min(Yn)) + -1) -> Xn in inf .. (max({min(rng(X)),min(rng(Y))}) + max(-rng(X))); 
+			(max({min(rng(X)),min(rng(Y))}) + -1) < ((min(rng(X)) + min(Xn)) + -1) -> Yn in inf .. (max({min(rng(X)),min(rng(Y))}) + max(-rng(Y))); 
+		} 
+		once(max({min(rng(Y)),min(rng(X))}) <= min({((min(rng(Y)) + min(Yn)) + -1),((min(rng(X)) + min(Xn)) + -1)})){
+			forall(j in (max({min(rng(Y)),min(rng(X))}) .. min({((min(rng(Y)) + min(Yn)) + -1),((min(rng(X)) + min(Xn)) + -1)}))){
+				X[j] in dom(Y[j]);
+				Y[j] in dom(X[j]);
+			}
+		} 
+		once(or(j in (max({min(rng(Y)),min(rng(X))}) .. min({((min(rng(Y)) + min(Yn)) + -1),((min(rng(X)) + min(Xn)) + -1)})))((dom(X[j]) inter dom(Y[j])) == emptyset)){
+			(max({min(rng(Y)),min(rng(X))}) + -1) < ((min(rng(X)) + min(Xn)) + -1) -> Yn in inf .. (max({min(rng(Y)),min(rng(X))}) + max(-rng(Y))); 
+			(max({min(rng(Y)),min(rng(X))}) + -1) < ((min(rng(Y)) + min(Yn)) + -1) -> Xn in inf .. (max({min(rng(Y)),min(rng(X))}) + max(-rng(X))); 
+		} 
+	}
+}
+
+def open_invariant(vint[] X, vint Xn){
+	checker{
+		and(i in (min({val(Xn),max(rng(X))}) .. max(rng(X))))(-1 == val(X[i]))
+	}
+	propagator(gen)::DR{
+		forall(i in (min({max(Xn),max(rng(X))}) .. max(rng(X)))){
+			X[i] in {-1};
+		}
+	}
+}
+
+def open_length(vint[] X, vint Xn, vint L){
+	checker{
+		val(L) == val(Xn)
+	}
+	propagator(gen)::BR{
+		L in min(Xn) .. max(Xn);
+		Xn in min(L) .. max(L);
+	}
+}
+
+def open_nequal(vint[] X, vint Xn, vint[] Y, vint Yn){
+	checker{
+		(val(Xn) != val(Yn) or or(i in (max({min(rng(X)),min(rng(Y))}) .. min({min({min({max(rng(X)),val(Xn)}),max(rng(Y))}),val(Yn)})))(val(X[i]) != val(Y[i])))
+	}
+	propagator(gen)::DR{
+		once(val(Xn) == val(Yn)){
+			forall(i in (max({min(rng(X)),min(rng(Y))}) .. min({min({min({max(rng(X)),val(Xn)}),max(rng(Y))}),val(Yn)}))){
+				once(and(ii66 in {ii66 in (max({min(rng(X)),min(rng(Y))}) .. min({min({min({max(rng(X)),val(Xn)}),max(rng(Y))}),val(Yn)})):i != ii66})(val(X[ii66]) == val(Y[ii66]))){
+					X[i] in (U minus {val(Y[i])});
+					Y[i] in (U minus {val(X[i])});
+				} 
+			}
+		} 
+		once(and(i in (max({min(rng(X)),min(rng(Y))}) .. min({min({min({max(rng(X)),min(Xn)}),max(rng(Y))}),min(Yn)})))(val(X[i]) == val(Y[i]))){
+			Xn in (U minus {val(Yn)});
+			Yn in (U minus {val(Xn)});
+		} 
+	}
+}
+
+def open_substring(vint[] X, vint Xn, vint[] Y, vint Yn, vint Index){
+	checker{
+		((val(Yn) + val(Index)) <= val(Xn) and ((min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + val(Index)) + val(Yn)) + -1)}) < max({min(rng(X)),(min(rng(Y)) + val(Index))}) or and(i in (max({min(rng(X)),(min(rng(Y)) + val(Index))}) .. min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + val(Index)) + val(Yn)) + -1)})))(val(X[i]) == val(Y[(i + -val(Index))]))) and (min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -val(Index)) + val(Xn)) + -1)}) < max({min(rng(Y)),(min(rng(X)) + -val(Index))}) or and(j in (max({min(rng(Y)),(min(rng(X)) + -val(Index))}) .. min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -val(Index)) + val(Xn)) + -1)})))(val(X[(j + val(Index))]) == val(Y[j])))))
+	}
+	propagator(gen)::DR{
+		Yn in inf .. (max(Xn) + -min(Index));
+		Index in inf .. (max(Xn) + -min(Yn));
+		Xn in (min(Yn) + min(Index)) .. sup;
+		once(max({min(rng(X)),(min(rng(Y)) + max(Index))}) <= min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Index)) + min(Yn)) + -1)})){
+			forall(i in (max({min(rng(X)),(min(rng(Y)) + max(Index))}) .. min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Index)) + min(Yn)) + -1)}))){
+				X[i] in union(ii88 in ({i} + -dom(Index)))(dom(Y[ii88]));
+				Y[(i + -val(Index))] in dom(X[i]);
+				Index in (-rng(Y) + {i});
+				forall(ii81 in rng(Y)){
+					(dom(Y[ii81]) inter dom(X[i])) == emptyset -> Index in (U minus {(-ii81 + i)}); 
+				}
+			}
+		} 
+		once(or(i in (max({min(rng(X)),(min(rng(Y)) + max(Index))}) .. min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Index)) + min(Yn)) + -1)})))((dom(X[i]) inter union(ii79 in ({i} + -dom(Index)))(dom(Y[ii79]))) == emptyset)){
+			(max({min(rng(X)),(min(rng(Y)) + max(Index))}) + -1) < (((min(rng(Y)) + min(Index)) + min(Yn)) + -1) -> Xn in inf .. (max({min(rng(X)),(min(rng(Y)) + max(Index))}) + max(-rng(X))); 
+			once((max({min(rng(X)),(min(rng(Y)) + max(Index))}) + -1) < ((min(rng(X)) + min(Xn)) + -1)){
+				Index in inf .. ((max({min(rng(X)),(min(rng(Y)) + max(Index))}) + max(-rng(Y))) + -min(Yn));
+				Yn in inf .. ((max({min(rng(X)),(min(rng(Y)) + max(Index))}) + max(-rng(Y))) + -min(Index));
+			} 
+			min(rng(X)) <= min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Index)) + min(Yn)) + -1)}) -> Index in ((min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Index)) + min(Yn)) + -1)}) + max(-rng(Y))) + 1) .. sup; 
+		} 
+		once(max({min(rng(Y)),(min(rng(X)) + -min(Index))}) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Index)) + min(Xn)) + -1)})){
+			forall(j in (max({min(rng(Y)),(min(rng(X)) + -min(Index))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Index)) + min(Xn)) + -1)}))){
+				X[(j + val(Index))] in dom(Y[j]);
+				Index in (rng(X) + {-j});
+				forall(ii75 in rng(X)){
+					(dom(X[ii75]) inter dom(Y[j])) == emptyset -> Index in (U minus {(ii75 + -j)}); 
+				}
+				Y[j] in union(ii74 in ({j} + dom(Index)))(dom(X[ii74]));
+			}
+		} 
+		once(or(j in (max({min(rng(Y)),(min(rng(X)) + -min(Index))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Index)) + min(Xn)) + -1)})))((union(ii70 in ({j} + dom(Index)))(dom(X[ii70])) inter dom(Y[j])) == emptyset)){
+			(max({min(rng(Y)),(min(rng(X)) + -min(Index))}) + -1) < (((min(rng(X)) + -max(Index)) + min(Xn)) + -1) -> Yn in inf .. (max({min(rng(Y)),(min(rng(X)) + -min(Index))}) + max(-rng(Y))); 
+			once((max({min(rng(Y)),(min(rng(X)) + -min(Index))}) + -1) < ((min(rng(Y)) + min(Yn)) + -1)){
+				Index in ((min({max(-rng(Y)),(max(-rng(X)) + min(Index))}) + min(rng(X))) + min(Xn)) .. sup;
+				Xn in inf .. ((max({min(rng(Y)),(min(rng(X)) + -min(Index))}) + max(-rng(X))) + max(Index));
+			} 
+			min(rng(Y)) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Index)) + min(Xn)) + -1)}) -> Index in inf .. ((max({((max(-rng(Y)) + -min(Yn)) + 1),(((max(-rng(X)) + max(Index)) + -min(Xn)) + 1)}) + min(rng(X))) + -1); 
+		} 
+	}
+}
+
+def p_region(vint[] X, vint Xn, vint[] Y, vint Yn, vint Offset){
+	checker{
+		((min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + val(Offset)) + val(Yn)) + -1)}) < max({min(rng(X)),(min(rng(Y)) + val(Offset))}) or and(i in (max({min(rng(X)),(min(rng(Y)) + val(Offset))}) .. min({((min(rng(X)) + val(Xn)) + -1),(((min(rng(Y)) + val(Offset)) + val(Yn)) + -1)})))(val(X[i]) == val(Y[(i + -val(Offset))]))) and (min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -val(Offset)) + val(Xn)) + -1)}) < max({min(rng(Y)),(min(rng(X)) + -val(Offset))}) or and(j in (max({min(rng(Y)),(min(rng(X)) + -val(Offset))}) .. min({((min(rng(Y)) + val(Yn)) + -1),(((min(rng(X)) + -val(Offset)) + val(Xn)) + -1)})))(val(X[(j + val(Offset))]) == val(Y[j]))))
+	}
+	propagator(gen)::DR{
+		once(max({min(rng(X)),(min(rng(Y)) + max(Offset))}) <= min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Offset)) + min(Yn)) + -1)})){
+			forall(i in (max({min(rng(X)),(min(rng(Y)) + max(Offset))}) .. min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Offset)) + min(Yn)) + -1)}))){
+				X[i] in union(ii108 in ({i} + -dom(Offset)))(dom(Y[ii108]));
+				Y[(i + -val(Offset))] in dom(X[i]);
+				Offset in (-rng(Y) + {i});
+				forall(ii101 in rng(Y)){
+					(dom(Y[ii101]) inter dom(X[i])) == emptyset -> Offset in (U minus {(-ii101 + i)}); 
+				}
+			}
+		} 
+		once(or(i in (max({min(rng(X)),(min(rng(Y)) + max(Offset))}) .. min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Offset)) + min(Yn)) + -1)})))((dom(X[i]) inter union(ii99 in ({i} + -dom(Offset)))(dom(Y[ii99]))) == emptyset)){
+			(max({min(rng(X)),(min(rng(Y)) + max(Offset))}) + -1) < (((min(rng(Y)) + min(Offset)) + min(Yn)) + -1) -> Xn in inf .. (max({min(rng(X)),(min(rng(Y)) + max(Offset))}) + max(-rng(X))); 
+			once((max({min(rng(X)),(min(rng(Y)) + max(Offset))}) + -1) < ((min(rng(X)) + min(Xn)) + -1)){
+				Offset in inf .. ((max({min(rng(X)),(min(rng(Y)) + max(Offset))}) + max(-rng(Y))) + -min(Yn));
+				Yn in inf .. ((max({min(rng(X)),(min(rng(Y)) + max(Offset))}) + max(-rng(Y))) + -min(Offset));
+			} 
+			min(rng(X)) <= min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Offset)) + min(Yn)) + -1)}) -> Offset in ((min({((min(rng(X)) + min(Xn)) + -1),(((min(rng(Y)) + min(Offset)) + min(Yn)) + -1)}) + max(-rng(Y))) + 1) .. sup; 
+		} 
+		once(max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Offset)) + min(Xn)) + -1)})){
+			forall(j in (max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Offset)) + min(Xn)) + -1)}))){
+				X[(j + val(Offset))] in dom(Y[j]);
+				Offset in (rng(X) + {-j});
+				forall(ii95 in rng(X)){
+					(dom(X[ii95]) inter dom(Y[j])) == emptyset -> Offset in (U minus {(ii95 + -j)}); 
+				}
+				Y[j] in union(ii94 in ({j} + dom(Offset)))(dom(X[ii94]));
+			}
+		} 
+		once(or(j in (max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) .. min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Offset)) + min(Xn)) + -1)})))((union(ii90 in ({j} + dom(Offset)))(dom(X[ii90])) inter dom(Y[j])) == emptyset)){
+			(max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) + -1) < (((min(rng(X)) + -max(Offset)) + min(Xn)) + -1) -> Yn in inf .. (max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) + max(-rng(Y))); 
+			once((max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) + -1) < ((min(rng(Y)) + min(Yn)) + -1)){
+				Offset in ((min({max(-rng(Y)),(max(-rng(X)) + min(Offset))}) + min(rng(X))) + min(Xn)) .. sup;
+				Xn in inf .. ((max({min(rng(Y)),(min(rng(X)) + -min(Offset))}) + max(-rng(X))) + max(Offset));
+			} 
+			min(rng(Y)) <= min({((min(rng(Y)) + min(Yn)) + -1),(((min(rng(X)) + -max(Offset)) + min(Xn)) + -1)}) -> Offset in inf .. ((max({((max(-rng(Y)) + -min(Yn)) + 1),(((max(-rng(X)) + max(Offset)) + -min(Xn)) + 1)}) + min(rng(X))) + -1); 
+		} 
+	}
+}
