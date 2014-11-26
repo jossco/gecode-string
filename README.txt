@@ -10,6 +10,8 @@ At the moment, a string is represented by two components:
     
 Constraints include equal, concat, substring, character_at, and an implementation of Michael Maher's bounded open version of the regular constraint.
 
+There is also a  [technical report](releases/download/v0.2/abstract-domain.pdf) outlining the theoretical foundation for the bounded-length string domain
+
 Build instructions:
 
 "make all" should do the trick.
