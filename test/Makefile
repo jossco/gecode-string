@@ -28,7 +28,7 @@ clean :
 	rm -f $(OBJS:.o=.d.*)
 	@echo Clean done
 
-$(TARGETS) : % : %.o
+$(TARGETS) : % : %.o $(MODULES)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ \
 		$(LDLIBS)
 
