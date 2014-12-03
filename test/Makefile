@@ -30,7 +30,6 @@ clean :
 
 $(TARGETS) : % : %.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ \
-		$(MODULES) \
 		$(LDLIBS)
 
 # $@ for the pattern-matched target
