@@ -1,23 +1,20 @@
 /*
-* open-layered-graph.cpp
-
-Propagator for Regular(X,L), where X is an array and L an integer length,
-based on:
+gecode-string:	bounded-length string constraints for Gecode
+url: 		github.com/jossco/gecode-string
+author: 	Joseph D. Scott, Uppsala University
+========
+file: 		./src/open-layered-graph.cpp
+version: 	0.2.1
+date: 		Wed Dec  3 17:58:46 CET 2014
+========
+Propagator for Regular(X,L), where X is an array and L an integer length.
+Algorithm based on:
           "Open Constraints in a Boundable World"
           Maher, M.J.
           CPAIOR 2009, LNCS 5547, pp. 163-177. Springer.
 
-The code was modifed from the Gecode fixed-length implementation,
+Code modifed from the Gecode fixed-length implementation of Regular:
 Gecode::Int::extensional::layered-graph.hpp
-
-Author:   Joseph D. Scott
-          Uppsala University
-
-Used in:
-          "Constraint Solving with Bounded String Variables"
-          Scott, J.D., Flener, P. and Pearson, J.
-          submitted to CPAIOR 2015
-
 */
 
 #include "open-layered-graph.hh"

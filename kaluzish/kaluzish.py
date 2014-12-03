@@ -1,5 +1,15 @@
 #!/usr/bin/env python2.7
+'''
+gecode-string:	bounded-length string constraints for Gecode
 
+url: 		github.com/jossco/gecode-string
+author: 	Joseph D. Scott, Uppsala University
+========
+file: 		./kaluzish/kaluzish.py
+version: 	0.2.1
+date: 		Wed Dec  3 17:58:46 CET 2014
+========
+'''
 from pyparsing import *
 import pprint
 from reparser import re2dfa

@@ -1,3 +1,12 @@
+%% gecode-string:	bounded-length string constraints for Gecode
+%% url: 		github.com/jossco/gecode-string
+%% author: 	Joseph D. Scott, Uppsala University
+%% ========
+%% file: 		./minizinc/mznlib/gecode-string-pad.mzn
+%% version: 	0.2.1
+%% date: 		Wed Dec  3 17:58:46 CET 2014
+%% ========
+
 include "regular.mzn";
 
 int: pad_char = 96;

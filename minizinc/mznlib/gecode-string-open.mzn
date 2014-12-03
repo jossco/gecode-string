@@ -1,3 +1,11 @@
+%% gecode-string:	bounded-length string constraints for Gecode
+%% url: 		github.com/jossco/gecode-string
+%% author: 	Joseph D. Scott, Uppsala University
+%% ========
+%% file: 		./minizinc/mznlib/gecode-string-open.mzn
+%% version: 	0.2.1
+%% date: 		Wed Dec  3 17:58:46 CET 2014
+%% ========
 %% Predicates for gecode-string bounded-length string constraints
 %% Generates flatzinc recognized by fzn-gecode-string (NOT fzn-gecode)
 

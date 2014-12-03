@@ -1,3 +1,12 @@
+%% gecode-string:	bounded-length string constraints for Gecode
+%% url: 		github.com/jossco/gecode-string
+%% author: 	Joseph D. Scott, Uppsala University
+%% ========
+%% file: 		./minizinc/mznlib/gecode-string-ascii.mzn
+%% version: 	0.2.1
+%% date: 		Wed Dec  3 17:58:46 CET 2014
+%% ========
+
 int: max_symbol = 96;
 set of int: symbols = 1..max_symbol;
 % offset by removing first 31 characters of ascii-127

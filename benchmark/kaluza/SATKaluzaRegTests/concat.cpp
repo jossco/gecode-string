@@ -1,11 +1,13 @@
 /*
-Author:   Joseph D. Scott
-          Uppsala University
-
-Used in:
-          "Constraint Solving on Bounded String Variables"
-          Scott, J.D., Flener, P. and Pearson, J.
-          submitted to CPAIOR 2015
+gecode-string:	bounded-length string constraints for Gecode
+url: 		github.com/jossco/gecode-string
+author: 	Joseph D. Scott, Uppsala University
+========
+file: 		./benchmark/kaluza/SATKaluzaRegTests/concat.cpp
+version: 	0.2.1
+date: 		Wed Dec  3 17:58:46 CET 2014
+========
+Constraint model by Jun He
 */
 
 #include <math.h>
